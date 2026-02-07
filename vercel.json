@@ -1,0 +1,16 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "src/saas/frontend/public/**",
+            "use": "@vercel/static"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "/src/saas/frontend/public/$1"
+        }
+    ],
+    "outputDirectory": "src/saas/frontend/public"
+}

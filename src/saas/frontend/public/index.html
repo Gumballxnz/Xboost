@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XBoost - Automação Premium para Twitter/X</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+    <style>
+        :root {
+            /* Cores baseadas nos screenshots */
+            --primary: #10b981;
+            /* Verde Botão */
+            --primary-hover: #059669;
+            --accent: #f59e0b;
+            /* Amarelo Raio */
+
+            --bg-page: #0f0f0f;
+            /* Fundo Preto Quase Total */
+            --bg-card: #18181b;
+            /* Zinc 900 */
+            --bg-card-hover: #27272a;
+            /* Zinc 800 */
+
+            --text-main: #ffffff;
+            --text-muted: #a1a1aa;
+            /* Zinc 400 */
+
+            --border: #27272a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        /* Utils */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .justify-center {
+            justify-content: center;
+        }
+
+        .flex-col {
+            flex-direction: column;
+        }
+
+        .gap-4 {
+            gap: 16px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-4 {
+            margin-top: 16px;
+        }
+
+        .mb-4 {
+            margin-bottom: 16px;
+        }
+
+        /* Header */
+        header {
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            background: rgba(15, 15, 15, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 50;
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        /* Raio Amarelo */
+
+        .nav-btn-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            margin-right: 24px;
+            transition: color 0.2s;
+        }
+
+        .nav-btn-link:hover {
+            color: white;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Hero */
+        .hero {
+            padding-top: 140px;
+            padding-bottom: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .badge-promo {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--primary);
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 24px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            max-width: 800px;
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, var(--primary), #a3e635);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin-bottom: 40px;
+        }
+
+        /* Stats */
+        .stats-section {
+            padding: 40px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 80px;
+        }
+
+        .stat-item h3 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .stat-item p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        /* Features */
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .section-subtitle {
+            color: var(--text-muted);
+            margin-bottom: 60px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 100px;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            padding: 32px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            transition: transform 0.2s;
+            text-align: left;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            background: var(--bg-card-hover);
+        }
+
+        .icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        /* Cores dos ícones baseadas na imagem */
+        .icon-robot {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+
+        .icon-shield {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .icon-globe {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Pricing */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+            max-width: 1000px;
+            margin: 0 auto 100px;
+        }
+
+        .pricing-card {
+            background: var(--bg-card);
+            padding: 40px;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            text-align: center;
+            position: relative;
+        }
+
+        .pricing-card.popular {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.1);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(to right, var(--primary), #059669);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .price {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .currency {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-top: 16px;
+        }
+
+        .features-list {
+            list-style: none;
+            margin-bottom: 32px;
+            text-align: left;
+        }
+
+        .features-list li {
+            margin-bottom: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .features-list li svg {
+            width: 16px;
+            height: 16px;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .btn-full {
+            width: 100%;
+            display: block;
+            padding: 14px;
+        }
+
+        /* Auth Modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            padding: 40px;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .oauth-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 12px;
+            background: #27272a;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .oauth-btn:hover {
+            background: #3f3f46;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="container flex justify-between items-center">
+            <a href="#" class="logo"><span>⚡</span> XBoost</a>
+            <div class="flex items-center">
+                <a href="#" onclick="openLogin()" class="nav-btn-link">Entrar</a>
+                <a href="#pricing" class="btn btn-primary">Começar Grátis</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero text-center">
+        <div class="badge-promo">🔥 5 comentários GRÁTIS para novos usuários</div>
+        <h1>Domine o <span class="text-gradient">Twitter/X</span><br>com Engajamento Real</h1>
+        <p class="hero-subtitle">Aumente sua visibilidade com comentários automáticos e humanizados. Sem robôs
+            detectáveis, sem banimentos.</p>
+        <div class="flex gap-4 justify-center">
+            <a href="#pricing" class="btn btn-primary" style="font-size: 1.1rem; padding: 14px 32px;">Começar Grátis
+                →</a>
+            <a href="#" onclick="openLogin()" class="btn btn-outline" style="font-size: 1.1rem; padding: 14px 32px;">Já
+                tenho conta</a>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="stats-section">
+        <div class="container flex justify-between" style="max-width: 800px;">
+            <div class="stat-item text-center">
+                <h3>12K+</h3>
+                <p>Comentários feitos</p>
+            </div>
+            <div class="stat-item text-center">
+                <h3>99%</h3>
+                <p>Taxa de sucesso</p>
+            </div>
+            <div class="stat-item text-center">
+                <h3>0</h3>
+                <p>Contas banidas</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="container text-center">
+        <h2 class="section-title">Por que escolher XBoost?</h2>
+        <p class="section-subtitle">Tecnologia de ponta para resultados reais</p>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="icon-box icon-robot">🤖</div>
+                <h3>100% Humanizado</h3>
+                <p>Nossos bots simulam comportamento humano real: delays, erros de digitação e padrões naturais.
+                    Impossível distinguir de um usuário real.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon-box icon-shield">🛡️</div>
+                <h3>Anti-Detecção</h3>
+                <p>Stealth mode avançado com fingerprinting único para cada conta. Indetectável pelo algoritmo de
+                    segurança do Twitter.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon-box icon-globe">🌐</div>
+                <h3>Proxies Premium</h3>
+                <p>Cada conta usa um IP exclusivo e fixo (sticky session) para máxima segurança. Rotação 4G global
+                    disponível.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="container text-center">
+        <h2 class="section-title">Preços Simples</h2>
+        <p class="section-subtitle">Pague apenas pelo que usar</p>
+
+        <div class="pricing-grid">
+            <!-- Starter -->
+            <div class="pricing-card">
+                <h3>Starter</h3>
+                <div class="price">500 <span class="currency">MZN</span></div>
+                <ul class="features-list">
+                    <li><svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg> 50 créditos</li>
+                    <li><svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg> Suporte por email</li>
+                    <li><svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg> Dashboard completo</li>
+                </ul>
+                <button onclick="openLogin()" class="btn btn-outline btn-full">Comprar</button>
+            </div>
+
+            <!-- Pro -->
+            <div class="pricing-card popular">
+                <div class="popular-badge">POPULAR</div>
+                <h3>Pro</h3>
+                <div class="price">900 <span class="currency">MZN</span></div>
+                <ul class="features-list">
+                    <li><svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg> 100 créditos</li>
+                    <li><svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg> Suporte prioritário</li>
+                    <li><svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg> Relatórios avançados</li>
+                    <li><svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg> API de integração</li>
+                </ul>
+                <button onclick="openLogin()" class="btn btn-primary btn-full">Comprar</button>
+            </div>
+
+            <!-- Business -->
+            <div class="pricing-card">
+                <h3>Business</h3>
+                <div class="price">2500 <span class="currency">MZN</span></div>
+                <ul class="features-list">
+                    <li><svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg> 500 créditos</li>
+                    <li><svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg> Suporte 24/7</li>
+                    <li><svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg> Manager dedicado</li>
+                    <li><svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg> White-label</li>
+                </ul>
+                <button onclick="openLogin()" class="btn btn-outline btn-full">Contato</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard View (Hidden by default) -->
+    <main id="dashboard-view" style="display: none; padding-top: 100px; padding-bottom: 50px;">
+        <div class="container">
+            <div class="flex justify-between items-center mb-4">
+                <h2 style="font-size: 2rem;">Meu Dashboard</h2>
+                <div class="user-credits badge-promo">💳 <span id="credit-balance">0</span> Créditos</div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="features-grid" style="margin-bottom: 40px; grid-template-columns: repeat(3, 1fr);">
+                <div class="feature-card" style="padding: 24px;">
+                    <h3 style="font-size: 1rem; color: var(--text-muted);">Campanhas Ativas</h3>
+                    <p style="font-size: 2rem; font-weight: 700; color: white;" id="stat-active">0</p>
+                </div>
+                <div class="feature-card" style="padding: 24px;">
+                    <h3 style="font-size: 1rem; color: var(--text-muted);">Comentários Hoje</h3>
+                    <p style="font-size: 2rem; font-weight: 700; color: white;" id="stat-comments">0</p>
+                </div>
+                <div class="feature-card" style="padding: 24px;">
+                    <h3 style="font-size: 1rem; color: var(--text-muted);">Total Gasto</h3>
+                    <p style="font-size: 2rem; font-weight: 700; color: white;">0 MZN</p>
+                </div>
+            </div>
+
+            <!-- New Campaign Form -->
+            <div class="pricing-card" style="text-align: left; max-width: 800px; margin: 0 auto;">
+                <h3 style="margin-bottom: 24px; text-align: center;">🚀 Nova Campanha</h3>
+
+                <form onsubmit="submitCampaign(event)">
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: var(--text-muted);">Link do Post
+                            (Twitter/X)</label>
+                        <input type="url" id="camp-url" placeholder="https://x.com/usuario/status/123..." required
+                            style="width: 100%; padding: 12px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: var(--text-muted);">Quantidade de
+                            Comentários</label>
+                        <input type="number" id="camp-count" min="5" max="1000" value="10"
+                            style="width: 100%; padding: 12px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Custo estimado: <span
+                                id="camp-cost" style="color: var(--primary);">0 créditos</span></p>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full">Lançar Campanha</button>
+                    <p id="form-feedback" style="text-align: center; margin-top: 10px; font-size: 0.9rem;"></p>
+                </form>
+            </div>
+
+            <!-- Recent Campaigns List -->
+            <div style="margin-top: 50px;">
+                <h3 style="margin-bottom: 20px;">Últimas Campanhas</h3>
+                <div id="campaign-list" style="background: var(--bg-card); border-radius: 16px; overflow: hidden;">
+                    <!-- Items rendered via JS -->
+                    <div style="padding: 20px; text-align: center; color: var(--text-muted);">Nenhuma campanha
+                        encontrada.</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Login -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="mb-4">Entrar no XBoost</h2>
+            <p class="text-muted mb-4">Escolha como deseja continuar</p>
+
+            <a href="http://16.170.133.174/api/auth/github" class="oauth-btn" style="background: #333;">
+                <svg fill="currentColor" width="20" height="20" viewBox="0 0 24 24">
+                    <path
+                        d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                </svg>
+                Continuar com GitHub
+            </a>
+
+            <a href="http://16.170.133.174/api/auth/google" class="oauth-btn"
+                style="background: white; color: black; border-color: white;">
+                <svg width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="#EA4335"
+                        d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.087 0 12 0 7.31 0 3.255 2.69 1.291 6.617l3.975 3.148Z" />
+                    <path fill="#34A853"
+                        d="M16.04 18.013c-1.09.703-2.474 1.078-4.04 1.078a7.077 7.077 0 0 1-6.723-4.823l-3.998 3.066C3.299 21.352 7.32 24 12 24c3.24 0 5.957-1.156 7.961-3.006l-3.922-2.981Z" />
+                    <path fill="#4A90E2"
+                        d="M19.834 10.09c.082.661.126 1.35.126 2.05s-.043 1.389-.126 2.05l3.923 2.981c.71-1.575 1.104-3.327 1.104-5.171s-.394-3.596-1.104-5.17l-3.923 3.26Z" />
+                    <path fill="#FBBC05"
+                        d="M5.266 14.235c-.175-.845-.266-1.72-.266-2.615s.091-1.77.266-2.615l-3.975-3.148C.486 7.643 0 9.773 0 12c0 2.227.486 4.357 1.291 6.143l3.975-3.908Z" />
+                </svg>
+                Continuar com Google
+            </a>
+
+            <button onclick="closeLogin()" class="btn btn-outline"
+                style="width: 100%; margin-top: 16px;">Cancelar</button>
+        </div>
+    </div>
+
+    <script>
+        function openLogin() { document.getElementById('login-modal').classList.add('active'); }
+        function closeLogin() { document.getElementById('login-modal').classList.remove('active'); }
+    </script>
+    <script src="app.js"></script>
+</body>
+
+</html>

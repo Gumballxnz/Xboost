@@ -1,0 +1,20 @@
+[
+  {
+    "id": "1770490687878",
+    "email": "teste@xboost.com",
+    "password": "$2a$10$iDAjIqbal8O/Rtxc1bnECe5R6PdIGkKIr8Ku1KMEaawp14z7m91EC",
+    "name": "Usuario Teste",
+    "credits": 5,
+    "plan": "free",
+    "createdAt": "2026-02-07T18:58:07.878Z"
+  },
+  {
+    "id": "1770493431772",
+    "email": "teste2@xboost.com",
+    "password": "$2a$10$UdHlczelhqjEJ63DMuJA5.WuNKS1tgkaF8gLbQ7Q1zwGcWnYoTUCC",
+    "name": "Teste User",
+    "credits": 5,
+    "plan": "free",
+    "createdAt": "2026-02-07T19:43:51.818Z"
+  }
+]
