@@ -1,0 +1,55 @@
+
+version: '3.8'
+
+services:
+  # Banco de Dados de Filas (Redis)
+  redis:
+    image: redis:alpine
+    container_name: xboost_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: always
+
+  # Backend API
+  api:
+    build: .
+    container_name: xboost_api
+    command: node src/backend/server.js
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - API_URL=${API_URL}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+    depends_on:
+      - redis
+    restart: always
+
+  # Worker de Processamento
+  worker:
+    build: .
+    container_name: xboost_worker
+    command: node src/backend/queues/process-campaign.job.js
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+    depends_on:
+      - redis
+      - api
+    restart: always
+
+volumes:
+  redis_data:

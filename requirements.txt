@@ -1,0 +1,23 @@
+# XBoost - CAPTCHA & Email Automation Requirements
+
+# CAPTCHA Engine
+openai-whisper>=20230314  # Audio CAPTCHA transcription
+vosk>=0.3.45              # Offline speech recognition (fallback)
+SpeechRecognition>=3.10   # Google Speech fallback
+
+# Email Automation
+imapclient>=2.3           # Enhanced IMAP support
+
+# Browser Automation
+playwright>=1.40          # Modern browser automation
+puppeteer>=0.0.1          # Alternative (Node.js bridge)
+
+# ML/Processing
+Pillow>=10.0              # Image processing
+numpy>=1.24               # Array operations
+
+# Web Dashboard
+requests>=2.31            # HTTP requests
+
+# Dev
+pytest>=7.4               # Testing
