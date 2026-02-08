@@ -12,6 +12,9 @@ import { Strategy as GitHubStrategy } from 'passport-github2';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import session from 'express-session';
 import { createClient } from '@supabase/supabase-js';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import { z } from 'zod';
 
 // Admin Routes - Dynamic to avoid crashes if files are missing
 let proxiesRouter = null, accountsRouter = null, usersRouter = null, statsRouter = null;
@@ -72,10 +75,30 @@ const OAUTH_CONFIG = {
     }
 };
 
-// Middleware
+// ================== SECURITY MIDDLEWARE ==================
+app.use(helmet({
+    contentSecurityPolicy: false, // Allow inline scripts for now (can tighten later)
+}));
+
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Rate Limiting
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 20, // Limit each IP to 20 requests per windowMs
+    message: { error: 'Muitas tentativas de login. Tente novamente em 15 minutos.' }
+});
+
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100
+});
+
+app.use('/api/', apiLimiter);
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
 
 // Auth UI Routes
 app.get(['/auth/sign-in', '/auth/sign-up', '/auth/login', '/auth/register'], (req, res) => {
@@ -268,17 +291,27 @@ function authMiddleware(req, res, next) {
     }
 }
 
+// ================== ZOD SCHEMAS ==================
+const RegisterSchema = z.object({
+    email: z.string().email('Email inválido'),
+    password: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres'),
+    name: z.string().min(2, 'Nome muito curto').optional(),
+    username: z.string().optional(),
+});
+
+const LoginSchema = z.object({
+    email: z.string().email('Email inválido'),
+    password: z.string().min(1, 'Senha obrigatória'),
+});
+
 // ================== AUTH ROUTES ==================
 
 // Registro
 app.post('/api/auth/register', async (req, res) => {
-    const { email, password, name, username } = req.body;
-
-    if (!email || !password) {
-        return res.status(400).json({ error: 'Email e senha obrigatórios' });
-    }
-
     try {
+        // Validate Input
+        const { email, password, name, username } = RegisterSchema.parse(req.body);
+
         // Check existing
         const { data: existing, error: findError } = await supabase
             .from('users')
@@ -328,7 +361,11 @@ app.post('/api/auth/register', async (req, res) => {
             token,
             user: { id: user.id, email: user.email, name: user.name, credits: user.credits }
         });
+
     } catch (err) {
+        if (err instanceof z.ZodError) {
+            return res.status(400).json({ error: err.errors[0].message });
+        }
         console.error('Register Error:', err);
         res.status(500).json({ error: `Erro Interno: ${err.message}` });
     }
@@ -336,9 +373,9 @@ app.post('/api/auth/register', async (req, res) => {
 
 // Login
 app.post('/api/auth/login', async (req, res) => {
-    const { email, password } = req.body;
-
     try {
+        const { email, password } = LoginSchema.parse(req.body);
+
         const { data: user, error } = await supabase
             .from('users')
             .select('*')
@@ -366,6 +403,9 @@ app.post('/api/auth/login', async (req, res) => {
             user: { id: user.id, email: user.email, name: user.name, credits: user.credits }
         });
     } catch (err) {
+        if (err instanceof z.ZodError) {
+            return res.status(400).json({ error: err.errors[0].message });
+        }
         console.error('Login Error:', err);
         res.status(500).json({ error: `Erro no Login: ${err.message}` });
     }
@@ -574,3 +614,4 @@ if (process.env.NODE_ENV !== 'production') {
         console.log(`🚀 Server running on port ${PORT}`);
     });
 }
+
