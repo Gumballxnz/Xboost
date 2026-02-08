@@ -51,9 +51,14 @@ export default function RootLayout({ children }) {
           
           // Desabilitar drag de imagens
           document.addEventListener('dragstart', e => e.preventDefault());
+          
+          // Anti-iframe (evitar clonagem via embed)
+          if (window.top !== window.self) {
+            window.top.location = window.self.location;
+          }
         `}} />
       </head>
-      <body className={`${geist.variable} ${geistMono.variable} antialiased select-none`}>
+      <body className={`${geist.variable} ${geistMono.variable} antialiased select-none oncontextmenu="return false"`}>
         <Providers>
           {children}
         </Providers>
