@@ -71,6 +71,11 @@ const OAUTH_CONFIG = {
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Auth UI Routes
+app.get(['/auth/sign-in', '/auth/sign-up', '/auth/login', '/auth/register'], (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'auth.html'));
+});
 app.use(session({
     secret: JWT_SECRET,
     resave: false,
