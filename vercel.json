@@ -1,6 +1,23 @@
 {
-    "buildCommand": "cd src/saas/xboost-saas && npm install && npm run build",
-    "outputDirectory": "src/saas/xboost-saas/.next",
-    "framework": "nextjs",
-    "installCommand": "cd src/saas/xboost-saas && npm install"
+    "version": 2,
+    "builds": [
+        {
+            "src": "src/saas/frontend/server.js",
+            "use": "@vercel/node"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/api/(.*)",
+            "dest": "src/saas/frontend/server.js"
+        },
+        {
+            "src": "/admin(.*)",
+            "dest": "src/saas/frontend/server.js"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "src/saas/frontend/server.js"
+        }
+    ]
 }
