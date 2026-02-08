@@ -1,23 +1,9 @@
 {
     "version": 2,
-    "builds": [
+    "rewrites": [
         {
-            "src": "src/saas/frontend/server.js",
-            "use": "@vercel/node"
-        }
-    ],
-    "routes": [
-        {
-            "src": "/api/(.*)",
-            "dest": "src/saas/frontend/server.js"
-        },
-        {
-            "src": "/admin(.*)",
-            "dest": "src/saas/frontend/server.js"
-        },
-        {
-            "src": "/(.*)",
-            "dest": "src/saas/frontend/server.js"
+            "source": "/(.*)",
+            "destination": "/api/index.js"
         }
     ]
 }
