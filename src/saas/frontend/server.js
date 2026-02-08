@@ -152,152 +152,75 @@ passport.deserializeUser(async (id, done) => {
     }
 });
 
-// ================== GitHub Strategy ==================
-passport.use(new GitHubStrategy(
-    OAUTH_CONFIG.github,
-    async (accessToken, refreshToken, profile, done) => {
-        try {
-            console.log('GitHub Profile:', JSON.stringify(profile)); // Debug log
-
-            // 1. Check if user exists by GitHub ID
-            let { data: user } = await supabase
-                .from('users')
-                .select('*')
-                .eq('githubId', profile.id)
-                .single();
-
-            if (!user) {
-                const email = profile.emails?.[0]?.value || profile._json?.email || `${profile.username}@github.local`;
-                const avatar = profile.photos?.[0]?.value || profile._json?.avatar_url;
-
-                // 2. Check if user exists by Email (to link account)
-                const { data: existingUser } = await supabase
-                    .from('users')
-                    .select('*')
-                    .eq('email', email)
-                    .single();
-
-                if (existingUser) {
-                    console.log(`🔗 Vinculando GitHub ao usuário existente: ${email}`);
-                    const { data: updated, error: updateError } = await supabase
-                        .from('users')
-                        .update({
-                            githubId: profile.id,
-                            avatar_url: existingUser.avatar_url || avatar // FIX: avatar -> avatar_url
-                        })
-                        .eq('id', existingUser.id)
-                        .select()
-                        .single();
-
-                    if (updateError) throw updateError;
-                    user = updated;
-                } else {
-                    // 3. Create new user
-                    const newUser = {
-                        email: email,
-                        name: profile.displayName || profile.username,
-                        avatar_url: avatar, // FIX: avatar -> avatar_url
-                        githubId: profile.id,
-                        provider: 'github',
-                        credits: 5,
-                        plan: 'free',
-                        created_at: new Date().toISOString()
-                    };
-
-                    const { data, error } = await supabase
-                        .from('users')
-                        .insert(newUser)
-                        .select()
-                        .single();
-
-                    if (error) {
-                        console.error('Supabase Insert Error (GitHub):', error);
-                        throw error;
+// ================== OAuth Strategies ==================
+if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+    passport.use(new GitHubStrategy(
+        OAUTH_CONFIG.github,
+        async (accessToken, refreshToken, profile, done) => {
+            try {
+                // ... (Existing GitHub Logic) ...
+                console.log('GitHub Profile:', JSON.stringify(profile));
+                let { data: user } = await supabase.from('users').select('*').eq('githubId', profile.id).single();
+                if (!user) {
+                    const email = profile.emails?.[0]?.value || profile._json?.email || `${profile.username}@github.local`;
+                    const avatar = profile.photos?.[0]?.value || profile._json?.avatar_url;
+                    const { data: existingUser } = await supabase.from('users').select('*').eq('email', email).single();
+                    if (existingUser) {
+                        const { data: updated, error } = await supabase.from('users').update({ githubId: profile.id, avatar_url: existingUser.avatar_url || avatar }).eq('id', existingUser.id).select().single();
+                        if (error) throw error;
+                        user = updated;
+                    } else {
+                        const newUser = { email, name: profile.displayName || profile.username, avatar_url: avatar, githubId: profile.id, provider: 'github', credits: 5, plan: 'free', created_at: new Date().toISOString() };
+                        const { data, error } = await supabase.from('users').insert(newUser).select().single();
+                        if (error) throw error;
+                        user = data;
                     }
-                    user = data;
-                    console.log(`🆕 Novo usuário via GitHub: ${user.name}`);
                 }
+                return done(null, user);
+            } catch (err) {
+                console.error('GitHub Auth Error:', err);
+                return done(err, null);
             }
-            return done(null, user);
-        } catch (err) {
-            console.error('GitHub Auth Error:', err);
-            return done(err, null);
         }
-    }
-));
+    ));
+    console.log('✅ GitHub Auth Enabled');
+} else {
+    console.warn('⚠️ GitHub Client ID/Secret missing. Skipping Strategy.');
+}
 
-// ================== Google Strategy ==================
-passport.use(new GoogleStrategy(
-    OAUTH_CONFIG.google,
-    async (accessToken, refreshToken, profile, done) => {
-        try {
-            // 1. Check if user exists by Google ID
-            let { data: user } = await supabase
-                .from('users')
-                .select('*')
-                .eq('googleId', profile.id)
-                .single();
-
-            if (!user) {
-                const email = profile.emails?.[0]?.value || `${profile.id}@google.local`;
-                const avatar = profile.photos?.[0]?.value;
-
-                // 2. Check if user exists by Email
-                const { data: existingUser } = await supabase
-                    .from('users')
-                    .select('*')
-                    .eq('email', email)
-                    .single();
-
-                if (existingUser) {
-                    console.log(`🔗 Vinculando Google ao usuário existente: ${email}`);
-                    const { data: updated, error: updateError } = await supabase
-                        .from('users')
-                        .update({
-                            googleId: profile.id,
-                            avatar_url: existingUser.avatar_url || avatar // FIX: avatar -> avatar_url
-                        })
-                        .eq('id', existingUser.id)
-                        .select()
-                        .single();
-
-                    if (updateError) throw updateError;
-                    user = updated;
-                } else {
-                    // 3. Create new user
-                    const newUser = {
-                        email: email,
-                        name: profile.displayName || profile.name?.givenName,
-                        avatar_url: avatar, // FIX: avatar -> avatar_url
-                        googleId: profile.id,
-                        provider: 'google',
-                        credits: 5,
-                        plan: 'free',
-                        created_at: new Date().toISOString()
-                    };
-
-                    const { data, error } = await supabase
-                        .from('users')
-                        .insert(newUser)
-                        .select()
-                        .single();
-
-                    if (error) {
-                        console.error('Supabase Insert Error (Google):', error);
-                        throw error;
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    passport.use(new GoogleStrategy(
+        OAUTH_CONFIG.google,
+        async (accessToken, refreshToken, profile, done) => {
+            try {
+                // ... (Existing Google Logic) ...
+                let { data: user } = await supabase.from('users').select('*').eq('googleId', profile.id).single();
+                if (!user) {
+                    const email = profile.emails?.[0]?.value || `${profile.id}@google.local`;
+                    const avatar = profile.photos?.[0]?.value;
+                    const { data: existingUser } = await supabase.from('users').select('*').eq('email', email).single();
+                    if (existingUser) {
+                        const { data: updated, error } = await supabase.from('users').update({ googleId: profile.id, avatar_url: existingUser.avatar_url || avatar }).eq('id', existingUser.id).select().single();
+                        if (error) throw error;
+                        user = updated;
+                    } else {
+                        const newUser = { email, name: profile.displayName || profile.name?.givenName, avatar_url: avatar, googleId: profile.id, provider: 'google', credits: 5, plan: 'free', created_at: new Date().toISOString() };
+                        const { data, error } = await supabase.from('users').insert(newUser).select().single();
+                        if (error) throw error;
+                        user = data;
                     }
-                    user = data;
-                    console.log(`🆕 Novo usuário via Google: ${user.name}`);
                 }
+                return done(null, user);
+            } catch (err) {
+                console.error('Google Auth Error:', err);
+                return done(err, null);
             }
-            return done(null, user);
-        } catch (err) {
-            console.error('Google Auth Error:', err);
-            return done(err, null);
         }
-    }
-));
-
+    ));
+    console.log('✅ Google Auth Enabled');
+} else {
+    console.warn('⚠️ Google Client ID/Secret missing. Skipping Strategy.');
+}
 // Auth Middleware
 function authMiddleware(req, res, next) {
     const token = req.headers.authorization?.replace('Bearer ', '');
