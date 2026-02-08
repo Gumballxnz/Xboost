@@ -113,7 +113,9 @@ passport.use(new GitHubStrategy(
     OAUTH_CONFIG.github,
     async (accessToken, refreshToken, profile, done) => {
         try {
-            // Check if user exists
+            console.log('GitHub Profile:', JSON.stringify(profile)); // Debug log
+
+            // 1. Check if user exists by GitHub ID
             let { data: user } = await supabase
                 .from('users')
                 .select('*')
@@ -121,27 +123,56 @@ passport.use(new GitHubStrategy(
                 .single();
 
             if (!user) {
-                // Create new user
-                const newUser = {
-                    email: profile.emails?.[0]?.value || `${profile.username}@github.local`,
-                    name: profile.displayName || profile.username,
-                    avatar: profile.photos?.[0]?.value,
-                    githubId: profile.id,
-                    provider: 'github',
-                    credits: 5,
-                    plan: 'free',
-                    created_at: new Date().toISOString()
-                };
+                const email = profile.emails?.[0]?.value || profile._json?.email || `${profile.username}@github.local`;
+                const avatar = profile.photos?.[0]?.value || profile._json?.avatar_url;
 
-                const { data, error } = await supabase
+                // 2. Check if user exists by Email (to link account)
+                const { data: existingUser } = await supabase
                     .from('users')
-                    .insert(newUser)
-                    .select()
+                    .select('*')
+                    .eq('email', email)
                     .single();
 
-                if (error) throw error;
-                user = data;
-                console.log(`🆕 Novo usuário via GitHub: ${user.name}`);
+                if (existingUser) {
+                    console.log(`🔗 Vinculando GitHub ao usuário existente: ${email}`);
+                    const { data: updated, error: updateError } = await supabase
+                        .from('users')
+                        .update({
+                            githubId: profile.id,
+                            avatar: existingUser.avatar || avatar // Keep existing, or update if empty
+                        })
+                        .eq('id', existingUser.id)
+                        .select()
+                        .single();
+
+                    if (updateError) throw updateError;
+                    user = updated;
+                } else {
+                    // 3. Create new user
+                    const newUser = {
+                        email: email,
+                        name: profile.displayName || profile.username,
+                        avatar: avatar,
+                        githubId: profile.id,
+                        provider: 'github',
+                        credits: 5,
+                        plan: 'free',
+                        created_at: new Date().toISOString()
+                    };
+
+                    const { data, error } = await supabase
+                        .from('users')
+                        .insert(newUser)
+                        .select()
+                        .single();
+
+                    if (error) {
+                        console.error('Supabase Insert Error (GitHub):', error);
+                        throw error;
+                    }
+                    user = data;
+                    console.log(`🆕 Novo usuário via GitHub: ${user.name}`);
+                }
             }
             return done(null, user);
         } catch (err) {
@@ -156,6 +187,7 @@ passport.use(new GoogleStrategy(
     OAUTH_CONFIG.google,
     async (accessToken, refreshToken, profile, done) => {
         try {
+            // 1. Check if user exists by Google ID
             let { data: user } = await supabase
                 .from('users')
                 .select('*')
@@ -163,26 +195,56 @@ passport.use(new GoogleStrategy(
                 .single();
 
             if (!user) {
-                const newUser = {
-                    email: profile.emails?.[0]?.value || `${profile.id}@google.local`,
-                    name: profile.displayName,
-                    avatar: profile.photos?.[0]?.value,
-                    googleId: profile.id,
-                    provider: 'google',
-                    credits: 5,
-                    plan: 'free',
-                    created_at: new Date().toISOString()
-                };
+                const email = profile.emails?.[0]?.value || `${profile.id}@google.local`;
+                const avatar = profile.photos?.[0]?.value;
 
-                const { data, error } = await supabase
+                // 2. Check if user exists by Email
+                const { data: existingUser } = await supabase
                     .from('users')
-                    .insert(newUser)
-                    .select()
+                    .select('*')
+                    .eq('email', email)
                     .single();
 
-                if (error) throw error;
-                user = data;
-                console.log(`🆕 Novo usuário via Google: ${user.name}`);
+                if (existingUser) {
+                    console.log(`🔗 Vinculando Google ao usuário existente: ${email}`);
+                    const { data: updated, error: updateError } = await supabase
+                        .from('users')
+                        .update({
+                            googleId: profile.id,
+                            avatar: existingUser.avatar || avatar
+                        })
+                        .eq('id', existingUser.id)
+                        .select()
+                        .single();
+
+                    if (updateError) throw updateError;
+                    user = updated;
+                } else {
+                    // 3. Create new user
+                    const newUser = {
+                        email: email,
+                        name: profile.displayName || profile.name?.givenName,
+                        avatar: avatar,
+                        googleId: profile.id,
+                        provider: 'google',
+                        credits: 5,
+                        plan: 'free',
+                        created_at: new Date().toISOString()
+                    };
+
+                    const { data, error } = await supabase
+                        .from('users')
+                        .insert(newUser)
+                        .select()
+                        .single();
+
+                    if (error) {
+                        console.error('Supabase Insert Error (Google):', error);
+                        throw error;
+                    }
+                    user = data;
+                    console.log(`🆕 Novo usuário via Google: ${user.name}`);
+                }
             }
             return done(null, user);
         } catch (err) {
