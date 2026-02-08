@@ -521,6 +521,60 @@ app.get('/api/campaigns/:id', authMiddleware, async (req, res) => {
     }
 });
 
+// ================== LOJOU WEBHOOK ==================
+app.post('/api/webhooks/lojou', async (req, res) => {
+    console.log('🔔 [LOJOU] Webhook Received:', new Date().toISOString());
+    console.log('Headers:', JSON.stringify(req.headers));
+    console.log('Body:', JSON.stringify(req.body));
+
+    try {
+        const payload = req.body;
+
+        // 1. Identify User (by email) -> Lojou usually sends 'customer_email' or 'email'
+        // We'll log everything for now to reverse-engineer the schema
+        const email = payload.email || payload.customer_email || payload.client_email;
+
+        if (!email) {
+            console.warn('⚠️ [LOJOU] No email found in payload');
+            return res.status(200).json({ received: true, status: 'no_email_identified' });
+        }
+
+        console.log(`👤 Processing payment for: ${email}`);
+
+        // 2. Find User
+        let { data: user, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('email', email)
+            .single();
+
+        if (!user) {
+            console.log('🆕 New User! Auto-creating account...');
+            // TODO: Auto-Signup Logic (Generate Password, Create User, Email Credentials)
+            // For now, just logging
+        } else {
+            console.log(`✅ Existing User Found: ${user.id} (${user.credits} credits)`);
+            // TODO: Update Plan / Add Credits logic
+            // await supabase.from('users').update({ credits: user.credits + 100, plan: 'pro' }).eq('id', user.id);
+        }
+
+        res.json({ received: true });
+    } catch (error) {
+        console.error('❌ [LOJOU] Webhook Error:', error);
+        res.status(500).json({ error: 'Webhook processing failed' });
+    }
+});
+
+// ================== GLOBAL ERROR HANDLER ==================
+app.use((err, req, res, next) => {
+    console.error('🔥 Unhandled Server Error:', err);
+    res.status(500).json({
+        error: 'Internal Server Error',
+        message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
+        code: 500
+    });
+});
+
 // ================== SIMULAÇÃO DO BOT ==================
 async function processCampaign(campaignId) {
     // Atualizar status para running
