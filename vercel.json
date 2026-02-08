@@ -1,26 +1,6 @@
 {
-    "version": 2,
-    "builds": [
-        {
-            "src": "src/saas/frontend/public/**",
-            "use": "@vercel/static"
-        }
-    ],
-    "rewrites": [
-        {
-            "source": "/api/:path*",
-            "destination": "http://16.170.133.174/api/:path*"
-        }
-    ],
-    "routes": [
-        {
-            "src": "/api/(.*)",
-            "dest": "http://16.170.133.174/api/$1"
-        },
-        {
-            "src": "/(.*)",
-            "dest": "/src/saas/frontend/public/$1"
-        }
-    ],
-    "outputDirectory": "src/saas/frontend/public"
+    "buildCommand": "cd src/saas/xboost-saas && npm install && npm run build",
+    "outputDirectory": "src/saas/xboost-saas/.next",
+    "framework": "nextjs",
+    "installCommand": "cd src/saas/xboost-saas && npm install"
 }
