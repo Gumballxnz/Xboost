@@ -27,11 +27,11 @@ passport.use(new GitHubStrategy({
     }
 ));
 
-// Google Strategy
+// Google Strategy - Usa FRONTEND_URL porque Google não aceita IP
 passport.use(new GoogleStrategy({
     clientID: authConfig.google.clientID,
     clientSecret: authConfig.google.clientSecret,
-    callbackURL: `${process.env.API_URL}/api/auth/google/callback`
+    callbackURL: `${process.env.FRONTEND_URL}/api/auth/google/callback`
 },
     async function (accessToken, refreshToken, profile, done) {
         try {
