@@ -17,7 +17,7 @@
             --bg-card: #0f0f0f;
             --bg-input: #121212;
             --text-main: #ffffff;
-            --text-muted: #6b7280;
+            --text-muted: #9ca3af;
             --border: #27272a;
         }
 
@@ -25,6 +25,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
         }
 
         body {
@@ -34,30 +35,29 @@
             height: 100vh;
             display: flex;
             overflow: hidden;
-            /* Prevent scrolling on body */
         }
 
-        /* Left Side - Form */
+        /* --- LAYOUT --- */
         .auth-container {
             flex: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 24px;
             background: var(--bg-page);
             position: relative;
             overflow-y: auto;
             height: 100%;
+            z-index: 10;
         }
 
         .auth-content-wrapper {
             width: 100%;
             max-width: 400px;
-            padding: 20px;
+            padding: 20px 0;
         }
 
-        /* Right Side - Info */
         .info-container {
             flex: 1.2;
             background: var(--bg-card);
@@ -69,16 +69,13 @@
             position: relative;
         }
 
+        /* --- TYPOGRAPHY & ELEMENTS --- */
         .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            color: white;
-            text-decoration: none;
-            margin-bottom: 30px;
+            margin-bottom: 32px;
+            color: var(--primary);
         }
 
         h1 {
@@ -86,9 +83,9 @@
             margin-bottom: 24px;
             text-align: center;
             font-weight: 700;
+            color: #fff;
         }
 
-        /* Social Buttons */
         .oauth-btn {
             display: flex;
             align-items: center;
@@ -110,7 +107,7 @@
 
         .oauth-btn:hover {
             background: #1a1a1a;
-            border-color: #404040;
+            border-color: #52525b;
         }
 
         .divider {
@@ -135,28 +132,31 @@
             padding: 0 10px;
         }
 
+        /* --- FORMS --- */
         label {
             display: block;
-            margin-bottom: 6px;
-            font-size: 0.85rem;
-            color: #d1d5db;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #e4e4e7;
             font-weight: 500;
         }
 
         .input-group {
             position: relative;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
 
         input {
             width: 100%;
-            padding: 12px 16px;
+            padding: 14px 16px;
             background: var(--bg-input);
             border: 1px solid var(--border);
             border-radius: 8px;
             color: white;
-            font-size: 0.95rem;
+            font-size: 1rem;
+            /* Prevents iOS Zoom */
             transition: border-color 0.2s;
+            appearance: none;
         }
 
         input:focus {
@@ -164,17 +164,24 @@
             border-color: var(--primary);
         }
 
-        input::placeholder {
-            color: #4b5563;
+        /* Force Dark Autocomplete */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px var(--bg-input) inset !important;
+            -webkit-text-fill-color: white !important;
+            transition: background-color 5000s ease-in-out 0s;
         }
 
         .eye-icon {
             position: absolute;
             right: 16px;
-            top: 42px;
+            top: 44px;
+            /* Centered visually with input */
             cursor: pointer;
             color: var(--text-muted);
-            font-size: 1rem;
+            font-size: 1.1rem;
         }
 
         .forgot-pass {
@@ -189,7 +196,7 @@
 
         .btn-primary {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             background: var(--primary);
             color: white;
             border: none;
@@ -197,18 +204,23 @@
             font-weight: 600;
             cursor: pointer;
             transition: background 0.2s;
-            font-size: 0.95rem;
+            font-size: 1rem;
         }
 
         .btn-primary:hover {
             background: var(--primary-hover);
-            box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-primary:disabled {
+            background: #059669;
+            opacity: 0.7;
+            cursor: not-allowed;
         }
 
         .auth-footer {
             margin-top: 24px;
             text-align: center;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: var(--text-muted);
         }
 
@@ -218,24 +230,19 @@
             font-weight: 600;
         }
 
-        .auth-footer a:hover {
-            text-decoration: underline;
-        }
-
         .terms-footer {
-            margin-top: 30px;
+            margin-top: 32px;
             text-align: center;
             font-size: 0.75rem;
-            color: #4b5563;
-            line-height: 1.4;
+            color: #52525b;
+            line-height: 1.5;
         }
 
         .terms-footer a {
-            color: var(--text-muted);
-            text-decoration: underline;
+            color: #71717a;
         }
 
-        /* Right Side Typography */
+        /* --- RIGHT SIDE CONTENT (Mockup) --- */
         .right-title {
             font-size: 2.5rem;
             font-weight: 800;
@@ -244,7 +251,6 @@
             letter-spacing: -0.02em;
         }
 
-        /* Mockup Container */
         .mockup-container {
             background: #121212;
             border: 1px solid var(--border);
@@ -252,106 +258,37 @@
             padding: 24px;
             margin-top: 20px;
             opacity: 0.9;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
             transform: perspective(1000px) rotateY(-5deg) rotateX(5deg);
-            transition: transform 0.5s ease;
         }
 
-        .mockup-container:hover {
-            transform: perspective(1000px) rotateY(0deg) rotateX(0deg);
-        }
-
-        /* Responsive Breakpoints */
-        @media (max-width: 900px) {
+        /* --- MOBILE RESPONSIVENESS (CRITICAL) --- */
+        @media (max-width: 1024px) {
             .info-container {
-                display: none;
+                display: none !important;
+                /* Hide right side on tablets/mobile */
             }
 
             .auth-container {
                 padding: 16px;
-                justify-content: flex-start;
-                /* Better for mobile keyboards */
                 padding-top: 40px;
+                align-items: flex-start;
+                /* Align top on mobile */
+                justify-content: flex-start;
             }
 
             .auth-content-wrapper {
                 max-width: 100%;
+                margin: 0 auto;
             }
 
             h1 {
                 font-size: 1.5rem;
             }
-        }
 
-        /* Mockup Classes */
-        .mockup-header-dots {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .dot {
-            height: 8px;
-            background: #27272a;
-            border-radius: 4px;
-        }
-
-        .dot-long {
-            width: 80px;
-        }
-
-        .dot-short {
-            width: 20px;
-        }
-
-        .mockup-body {
-            display: flex;
-            gap: 16px;
-        }
-
-        .left-col {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .bar {
-            height: 32px;
-            background: #18181b;
-            border-radius: 6px;
-        }
-
-        .bar-red {
-            border-left: 3px solid #ef4444;
-        }
-
-        .bar-green {
-            border-left: 3px solid #10b981;
-        }
-
-        .bar-yellow {
-            border-left: 3px solid #f59e0b;
-        }
-
-        .right-col {
-            flex: 1.5;
-            background: #000;
-            border-radius: 8px;
-            border: 1px solid #27272a;
-            height: 160px;
-        }
-
-        .right-col-header {
-            padding: 12px;
-            border-bottom: 1px solid #27272a;
-        }
-
-        .bar-green-small {
-            width: 40%;
-            height: 6px;
-            background: #10b981;
-            border-radius: 3px;
+            .logo svg {
+                width: 32px;
+                height: 32px;
+            }
         }
     </style>
 </head>
@@ -360,16 +297,15 @@
 
     <!-- Left Side: Auth Forms -->
     <div class="auth-container">
-
         <div class="auth-content-wrapper">
             <a href="/" class="logo">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="#10b981" fill="#10b981" />
                 </svg>
             </a>
 
             <div id="auth-content">
-                <!-- Dynamic Content Loaded via JS -->
+                <!-- Content injected by JS -->
             </div>
 
             <div class="terms-footer">
@@ -379,10 +315,10 @@
         </div>
     </div>
 
-    <!-- Right Side: Info -->
+    <!-- Right Side: Info (Hidden on Mobile) -->
     <div class="info-container">
         <div style="position: absolute; top: 40px; right: 40px;">
-            <a href="/" class="logo" style="margin: 0; font-size: 1.2rem;">
+            <a href="/" class="logo" style="margin: 0; font-size: 1.2rem; text-decoration: none; color: white;">
                 <span>⚡</span> XBoost.
             </a>
         </div>
@@ -391,22 +327,13 @@
             XBoost.</h2>
 
         <div class="mockup-container">
-            <div class="mockup-header-dots">
-                <div class="dot dot-long"></div>
-                <div class="dot dot-short"></div>
+            <!-- Simple Mockup Content -->
+            <div style="display:flex; gap:8px; margin-bottom:16px;">
+                <div style="width:12px; height:12px; background:#27272a; border-radius:50%"></div>
+                <div style="width:12px; height:12px; background:#27272a; border-radius:50%"></div>
+                <div style="width:12px; height:12px; background:#27272a; border-radius:50%"></div>
             </div>
-            <div class="mockup-body">
-                <div class="left-col">
-                    <div class="bar bar-red"></div>
-                    <div class="bar bar-green"></div>
-                    <div class="bar bar-yellow"></div>
-                </div>
-                <div class="right-col">
-                    <div class="right-col-header">
-                        <div class="bar-green-small"></div>
-                    </div>
-                </div>
-            </div>
+            <div style="height:120px; background:#18181b; border-radius:8px;"></div>
         </div>
     </div>
 
@@ -416,44 +343,142 @@
 
         function checkParams() {
             const path = window.location.pathname;
-            if (path.includes('sign-up') || path.includes('register')) {
-                isLogin = false;
-            } else {
-                isLogin = true;
-            }
+            isLogin = !(path.includes('sign-up') || path.includes('register'));
             renderAuth();
+        }
+
+        function toggleMode(e, url) {
+            e.preventDefault();
+            window.history.pushState({}, '', url);
+            checkParams();
+        }
+
+        function togglePass(id, icon) {
+            const input = document.getElementById(id);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        function showError(msg, details = null) {
+            const errorEl = document.getElementById('error-msg');
+            if (errorEl) {
+                errorEl.innerText = msg;
+                errorEl.style.display = 'block';
+                // Also show detailed error in console for debugging
+                if (details) console.error('Auth Error Details:', details);
+            }
+        }
+
+        async function handleAuth(e, type) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.textContent;
+
+            btn.disabled = true;
+            btn.textContent = type === 'login' ? 'Entrando...' : 'Criando conta...';
+
+            const errorEl = document.getElementById('error-msg');
+            if (errorEl) errorEl.style.display = 'none';
+
+            // Gather Data
+            const data = {};
+            if (type === 'login') {
+                data.email = document.getElementById('login-email').value;
+                data.password = document.getElementById('login-password').value;
+            } else {
+                data.name = document.getElementById('reg-name').value;
+                data.username = document.getElementById('reg-username').value;
+                data.email = document.getElementById('reg-email').value;
+                data.password = document.getElementById('reg-password').value;
+                const confirm = document.getElementById('reg-confirm').value;
+
+                if (data.password !== confirm) {
+                    showError('As senhas não conferem.');
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    return;
+                }
+            }
+
+            try {
+                // Construct absolute URL to avoid reliance on relative paths
+                const endpoint = type === 'login' ? '/api/auth/login' : '/api/auth/register';
+                const url = window.location.origin + endpoint;
+
+                console.log(`Sending request to: ${url}`, data);
+
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const contentType = res.headers.get("content-type");
+                let responseData;
+
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    responseData = await res.json();
+                } else {
+                    const text = await res.text();
+                    console.error("Non-JSON Response:", text);
+                    throw new Error(`Servidor retornou erro ${res.status} (Não-JSON)`);
+                }
+
+                if (res.ok && responseData.token) {
+                    localStorage.setItem('xboost_token', responseData.token);
+                    window.location.href = '/';
+                } else {
+                    showError(responseData.error || 'Erro desconhecido. Tente novamente.');
+                }
+
+            } catch (err) {
+                console.error(err);
+                showError(`Erro de conexão: ${err.message}`);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
         }
 
         function renderAuth() {
             const container = document.getElementById('auth-content');
 
+            // Common Social Buttons
+            const socialButtons = `
+                <a href="/api/auth/google" class="oauth-btn"><i class="fab fa-google"></i> Continuar com Google</a>
+                <a href="/api/auth/github" class="oauth-btn"><i class="fab fa-github"></i> Continuar com GitHub</a>
+                <div class="divider"><span>OU</span></div>
+            `;
+
+            // Error Element
+            const errorElement = `<p id="error-msg" style="color: #ef4444; font-size: 0.85rem; margin-bottom: 16px; display: none; padding: 12px; background: rgba(239,68,68,0.1); border-radius: 8px; text-align: center; border: 1px solid rgba(239,68,68,0.2);"></p>`;
+
             if (isLogin) {
                 document.title = 'Entrar - XBoost';
                 container.innerHTML = `
                     <h1>Bem-vindo de volta!</h1>
-
-                    <a href="/api/auth/google" class="oauth-btn"><i class="fab fa-google"></i> Continuar com Google</a>
-                    <a href="/api/auth/github" class="oauth-btn"><i class="fab fa-github"></i> Continuar com GitHub</a>
-
-                    <div class="divider"><span>OU</span></div>
-
-                    <form onsubmit="handleLogin(event)">
+                    ${socialButtons}
+                    <form onsubmit="handleAuth(event, 'login')">
                         <div class="input-group">
                             <label>Email</label>
-                            <input type="email" id="login-email" placeholder="seu@email.com" required>
+                            <input type="email" id="login-email" placeholder="seu@email.com" required autocomplete="email">
                         </div>
                         <div class="input-group">
                             <label>Senha</label>
-                            <input type="password" id="login-password" placeholder="Sua senha" required>
+                            <input type="password" id="login-password" placeholder="Sua senha" required autocomplete="current-password">
                             <i class="fas fa-eye eye-icon" onclick="togglePass('login-password', this)"></i>
                         </div>
-                        
                         <a href="#" class="forgot-pass">Esqueceu a senha?</a>
-
-                        <p id="error-msg" style="color: #ef4444; font-size: 0.85rem; margin-bottom: 12px; display: none; padding: 10px; background: rgba(239,68,68,0.1); border-radius: 6px; text-align: center;"></p>
+                        ${errorElement}
                         <button type="submit" class="btn-primary">Entrar</button>
                     </form>
-
                     <div class="auth-footer">
                         Não tem uma conta? <a href="/auth/sign-up" onclick="toggleMode(event, '/auth/sign-up')">Crie agora</a>
                     </div>
@@ -462,41 +487,33 @@
                 document.title = 'Criar Conta - XBoost';
                 container.innerHTML = `
                     <h1>Vamos começar!</h1>
-
-                    <a href="/api/auth/google" class="oauth-btn"><i class="fab fa-google"></i> Continuar com Google</a>
-                    <a href="/api/auth/github" class="oauth-btn"><i class="fab fa-github"></i> Continuar com GitHub</a>
-
-                    <div class="divider"><span>OU</span></div>
-
-                    <form onsubmit="handleRegister(event)">
+                    ${socialButtons}
+                    <form onsubmit="handleAuth(event, 'register')">
                         <div class="input-group">
                             <label>Nome Completo</label>
-                            <input type="text" id="reg-name" placeholder="Seu nome" required>
+                            <input type="text" id="reg-name" placeholder="Seu nome" required autocomplete="name">
                         </div>
                         <div class="input-group">
                             <label>Usuário (sem @)</label>
-                            <input type="text" id="reg-username" placeholder="seuusuario" required>
+                            <input type="text" id="reg-username" placeholder="seuusuario" required autocomplete="username">
                         </div>
                         <div class="input-group">
                             <label>Email</label>
-                            <input type="email" id="reg-email" placeholder="seu@email.com" required>
+                            <input type="email" id="reg-email" placeholder="seu@email.com" required autocomplete="email">
                         </div>
                         <div class="input-group">
                             <label>Senha</label>
-                            <input type="password" id="reg-password" placeholder="Mínimo 8 caracteres" required minlength="8">
+                            <input type="password" id="reg-password" placeholder="Mínimo 8 caracteres" required minlength="8" autocomplete="new-password">
                             <i class="fas fa-eye eye-icon" onclick="togglePass('reg-password', this)"></i>
                         </div>
                         <div class="input-group">
                             <label>Confirmar Senha</label>
-                            <input type="password" id="reg-confirm" placeholder="Confirme a senha" required>
+                            <input type="password" id="reg-confirm" placeholder="Confirme a senha" required autocomplete="new-password">
                             <i class="fas fa-eye eye-icon" onclick="togglePass('reg-confirm', this)"></i>
                         </div>
-                        
-                        <p id="error-msg" style="color: #ef4444; font-size: 0.85rem; margin-bottom: 12px; display: none; padding: 10px; background: rgba(239,68,68,0.1); border-radius: 6px; text-align: center;"></p>
-                        
+                        ${errorElement}
                         <button type="submit" class="btn-primary">Criar Conta</button>
                     </form>
-
                     <div class="auth-footer">
                         Já tem uma conta? <a href="/auth/sign-in" onclick="toggleMode(event, '/auth/sign-in')">Entrar</a>
                     </div>
@@ -504,691 +521,8 @@
             }
         }
 
-        function toggleMode(e, url) {
-            e.preventDefault();
-            window.history.pushState({}, '', url);
-            checkParams();
-        }
-
-        function togglePass(id, icon) {
-            const input = document.getElementById(id);
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        }
-
-        async function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            const errorEl = document.getElementById('error-msg');
-            const btn = e.target.querySelector('button');
-
-            btn.disabled = true;
-            btn.textContent = 'Carregando...';
-            errorEl.style.display = 'none';
-
-            try {
-                const res = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                const data = await res.json();
-
-                if (data.token) {
-                    localStorage.setItem('xboost_token', data.token); // Consistent token key
-                    window.location.href = '/';
-                } else {
-                    errorEl.innerText = data.error || 'Erro ao entrar. Verifique suas credenciais.';
-                    errorEl.style.display = 'block';
-                }
-            } catch (err) {
-                console.error(err);
-                errorEl.innerText = 'Erro de conexão com o servidor.';
-                errorEl.style.display = 'block';
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'Entrar';
-            }
-        }
-
-        async function handleRegister(e) {
-            e.preventDefault();
-            const name = document.getElementById('reg-name').value;
-            const username = document.getElementById('reg-username').value;
-            const email = document.getElementById('reg-email').value;
-            const password = document.getElementById('reg-password').value;
-            const confirm = document.getElementById('reg-confirm').value;
-            const errorEl = document.getElementById('error-msg');
-            const btn = e.target.querySelector('button');
-
-            if (password !== confirm) {
-                errorEl.innerText = 'As senhas não conferem.';
-                errorEl.style.display = 'block';
-                return;
-            }
-
-            btn.disabled = true;
-            btn.textContent = 'Criando conta...';
-            errorEl.style.display = 'none';
-
-            try {
-                const res = await fetch('/api/auth/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, username, email, password })
-                });
-                const data = await res.json();
-
-                if (data.token) {
-                    localStorage.setItem('xboost_token', data.token); // Consistent token key
-                    window.location.href = '/';
-                } else {
-                    errorEl.innerText = data.error || 'Erro ao criar conta. Tente novamente.';
-                    errorEl.style.display = 'block';
-                }
-            } catch (err) {
-                console.error(err);
-                errorEl.innerText = 'Erro de conexão com o servidor.';
-                errorEl.style.display = 'block';
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'Criar Conta';
-            }
-        }
-
-        // Initialize
+        // Init
         checkParams();
-
-        // Handle Back/Forward buttons
-        window.onpopstate = checkParams;
-    </script>
-</body>
-
-</html>
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Entrar - XBoost</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <style>
-        :root {
-            --primary: #10b981;
-            --primary-hover: #059669;
-            --bg-page: #000000;
-            /* Pitch black like TestSprite */
-            --bg-card: #0f0f0f;
-            --bg-input: #121212;
-            --text-main: #ffffff;
-            --text-muted: #6b7280;
-            --border: #27272a;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-page);
-            color: var(--text-main);
-            height: 100vh;
-            display: flex;
-        }
-
-        /* Left Side - Form */
-        .auth-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            /* Center horizontally */
-            padding: 40px;
-            background: var(--bg-page);
-            position: relative;
-            overflow-y: auto;
-        }
-
-        .auth-content-wrapper {
-            width: 100%;
-            max-width: 420px;
-            /* TestSprite's narrow form width */
-        }
-
-        /* Right Side - Info */
-        .info-container {
-            flex: 1.2;
-            /* Slightly wider */
-            background: var(--bg-card);
-            border-left: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 80px;
-            position: relative;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            color: white;
-            text-decoration: none;
-            margin-bottom: 40px;
-        }
-
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 30px;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        /* Social Buttons */
-        .oauth-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            width: 100%;
-            padding: 10px;
-            /* Slimmer */
-            margin-bottom: 12px;
-            background: transparent;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            /* Smaller radius */
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-
-        .oauth-btn:hover {
-            background: #1a1a1a;
-        }
-
-        .divider {
-            display: flex;
-            align-items: center;
-            margin: 24px 0;
-            color: var(--text-muted);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-        }
-
-        .divider::before,
-        .divider::after {
-            content: "";
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-        }
-
-        .divider span {
-            padding: 0 10px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 0.85rem;
-            color: #d1d5db;
-            font-weight: 600;
-        }
-
-        .input-group {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px 16px;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: white;
-            font-size: 0.95rem;
-            transition: border-color 0.2s;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        input::placeholder {
-            color: #4b5563;
-        }
-
-        .eye-icon {
-            position: absolute;
-            right: 16px;
-            top: 40px;
-            /* Adjusted for label */
-            cursor: pointer;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        .forgot-pass {
-            text-align: right;
-            display: block;
-            font-size: 0.85rem;
-            color: var(--primary);
-            text-decoration: none;
-            margin-bottom: 24px;
-            font-weight: 500;
-        }
-
-        .btn-primary {
-            width: 100%;
-            padding: 12px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-size: 0.95rem;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-hover);
-        }
-
-        .auth-footer {
-            margin-top: 24px;
-            text-align: center;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-
-        .auth-footer a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .auth-footer a:hover {
-            text-decoration: underline;
-        }
-
-        .terms-footer {
-            margin-top: 40px;
-            text-align: center;
-            font-size: 0.75rem;
-            color: #4b5563;
-        }
-
-        .terms-footer a {
-            color: var(--primary);
-            text-decoration: none;
-        }
-
-        /* Right Side Typography */
-        .right-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 40px;
-            line-height: 1.2;
-        }
-
-        .mockup-container {
-            background: #121212;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 20px;
-            opacity: 0.8;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
-        }
-
-        @media (max-width: 900px) {
-            .info-container {
-                display: none;
-            }
-
-            .auth-container {
-                max-width: 100%;
-                padding: 24px;
-                width: 100%;
-            }
-
-            .auth-content-wrapper {
-                max-width: 100%;
-            }
-        }
-
-        /* Mockup Classes */
-        .mockup-header-dots {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .dot {
-            height: 10px;
-            background: #27272a;
-            border-radius: 4px;
-        }
-
-        .dot-long {
-            width: 100px;
-        }
-
-        .dot-short {
-            width: 20px;
-        }
-
-        .mockup-body {
-            display: flex;
-            gap: 20px;
-        }
-
-        .left-col {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .bar {
-            height: 40px;
-            background: #18181b;
-            border-radius: 8px;
-        }
-
-        .bar-red {
-            border-left: 4px solid #ef4444;
-        }
-
-        .bar-green {
-            border-left: 4px solid #10b981;
-        }
-
-        .bar-yellow {
-            border-left: 4px solid #f59e0b;
-        }
-
-        .right-col {
-            flex: 1.5;
-            background: #000;
-            border-radius: 8px;
-            border: 1px solid #27272a;
-            height: 200px;
-        }
-
-        .right-col-header {
-            padding: 15px;
-            border-bottom: 1px solid #27272a;
-        }
-
-        .bar-green-small {
-            width: 40%;
-            height: 8px;
-            background: #10b981;
-            border-radius: 4px;
-        }
-    </style>
-</head>
-
-<body>
-
-    <!-- Left Side: Auth Forms -->
-    <div class="auth-container">
-
-        <div class="auth-content-wrapper">
-            <a href="/" class="logo">
-                <!-- Simple Logo Icon -->
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="#10b981" fill="#10b981" />
-                </svg>
-            </a>
-
-            <div id="auth-content">
-                <!-- Dynamic Content Loaded via JS -->
-            </div>
-
-            <div class="terms-footer">
-                By proceeding, you agree to our <a href="#">Terms of use</a> and <a href="#">Privacy policy</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Right Side: Info -->
-    <div class="info-container">
-        <div style="position: absolute; top: 40px; right: 40px;">
-            <a href="/" class="logo" style="margin: 0; font-size: 1.2rem;">
-                <span>⚡</span> XBoost.
-            </a>
-        </div>
-
-        <h2 class="right-title">Economize tempo e simplesmente<br>cresça mais rápido com XBoost</h2>
-
-        <!-- Abstract Mockup to match screenshot vibe -->
-        <!-- Abstract Mockup to match screenshot vibe -->
-        <div class="mockup-container">
-            <div class="mockup-header-dots">
-                <div class="dot dot-long"></div>
-                <div class="dot dot-short"></div>
-            </div>
-            <div class="mockup-body">
-                <div class="left-col">
-                    <div class="bar bar-red"></div>
-                    <div class="bar bar-green"></div>
-                    <div class="bar bar-yellow"></div>
-                </div>
-                <div class="right-col">
-                    <div class="right-col-header">
-                        <div class="bar-green-small"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // State
-        let isLogin = true;
-
-        function checkParams() {
-            const path = window.location.pathname;
-            if (path.includes('sign-up') || path.includes('register')) {
-                isLogin = false;
-            } else {
-                isLogin = true;
-            }
-            renderAuth();
-        }
-
-        function renderAuth() {
-            const container = document.getElementById('auth-content');
-
-            if (isLogin) {
-                document.title = 'Entrar - XBoost';
-                container.innerHTML = `
-                    <h1>Welcome back!</h1>
-
-                    <a href="/api/auth/google" class="oauth-btn"><i class="fab fa-google"></i> Continue with Google</a>
-                    <a href="/api/auth/github" class="oauth-btn"><i class="fab fa-github"></i> Continue with GitHub</a>
-
-                    <div class="divider"><span>OR</span></div>
-
-                    <form onsubmit="handleLogin(event)">
-                        <div class="input-group">
-                            <label>Email</label>
-                            <input type="email" id="login-email" placeholder="Email Address" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Password</label>
-                            <input type="password" id="login-password" placeholder="Password" required>
-                            <i class="fas fa-eye eye-icon" onclick="togglePass('login-password', this)"></i>
-                        </div>
-                        
-                        <a href="#" class="forgot-pass">Forgot password?</a>
-
-                        <p id="error-msg" style="color: #ef4444; font-size: 0.85rem; margin-bottom: 12px; display: none;"></p>
-                        <button type="submit" class="btn-primary">Continue</button>
-                    </form>
-
-                    <div class="auth-footer">
-                        Don't have an account? <a href="/auth/sign-up" onclick="toggleMode(event, '/auth/sign-up')">Create an account</a>
-                    </div>
-                `;
-            } else {
-                document.title = 'Create Account - XBoost';
-                container.innerHTML = `
-                    <h1>Let's get started!</h1>
-
-                    <a href="/api/auth/google" class="oauth-btn"><i class="fab fa-google"></i> Continue with Google</a>
-                    <a href="/api/auth/github" class="oauth-btn"><i class="fab fa-github"></i> Continue with GitHub</a>
-
-                    <div class="divider"><span>OR</span></div>
-
-                    <form onsubmit="handleRegister(event)">
-                        <div class="input-group">
-                            <label>Full Name</label>
-                            <input type="text" id="reg-name" placeholder="John Doe" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Username</label>
-                            <input type="text" id="reg-username" placeholder="johndoe123" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Email</label>
-                            <input type="email" id="reg-email" placeholder="Email Address" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Password</label>
-                            <input type="password" id="reg-password" placeholder="Min 8 characters" required minlength="8">
-                            <i class="fas fa-eye eye-icon" onclick="togglePass('reg-password', this)"></i>
-                        </div>
-                        <div class="input-group">
-                            <label>Confirm Password</label>
-                            <input type="password" id="reg-confirm" placeholder="Confirm Password" required>
-                            <i class="fas fa-eye eye-icon" onclick="togglePass('reg-confirm', this)"></i>
-                        </div>
-                        
-                        <p id="error-msg" style="color: #ef4444; font-size: 0.85rem; margin-bottom: 12px; display: none;"></p>
-                        
-                        <button type="submit" class="btn-primary">Create Account</button>
-                    </form>
-
-                    <div class="auth-footer">
-                        Already have an account? <a href="/auth/sign-in" onclick="toggleMode(event, '/auth/sign-in')">Sign in</a>
-                    </div>
-                `;
-            }
-        }
-
-        function toggleMode(e, url) {
-            e.preventDefault();
-            window.history.pushState({}, '', url);
-            checkParams();
-        }
-
-        function togglePass(id, icon) {
-            const input = document.getElementById(id);
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        }
-
-        async function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            const errorEl = document.getElementById('error-msg');
-
-            try {
-                const res = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                const data = await res.json();
-
-                if (data.token) {
-                    localStorage.setItem('token', data.token);
-                    window.location.href = '/';
-                } else {
-                    errorEl.innerText = data.error || 'Erro ao entrar';
-                    errorEl.style.display = 'block';
-                }
-            } catch (err) {
-                errorEl.innerText = 'Erro de conexão';
-                errorEl.style.display = 'block';
-            }
-        }
-
-        async function handleRegister(e) {
-            e.preventDefault();
-            const name = document.getElementById('reg-name').value;
-            const username = document.getElementById('reg-username').value;
-            const email = document.getElementById('reg-email').value;
-            const password = document.getElementById('reg-password').value;
-            const confirm = document.getElementById('reg-confirm').value;
-            const errorEl = document.getElementById('error-msg');
-
-            if (password !== confirm) {
-                errorEl.innerText = 'Senhas não conferem';
-                errorEl.style.display = 'block';
-                return;
-            }
-
-            try {
-                const res = await fetch('/api/auth/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, username, email, password })
-                });
-                const data = await res.json();
-
-                if (data.token) {
-                    localStorage.setItem('token', data.token);
-                    window.location.href = '/';
-                } else {
-                    errorEl.innerText = data.error || 'Erro ao criar conta';
-                    errorEl.style.display = 'block';
-                }
-            } catch (err) {
-                errorEl.innerText = 'Erro de conexão';
-                errorEl.style.display = 'block';
-            }
-        }
-
-        // Initialize
-        checkParams();
-
-        // Handle Back/Forward buttons
         window.onpopstate = checkParams;
     </script>
 </body>
