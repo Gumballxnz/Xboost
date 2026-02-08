@@ -139,7 +139,7 @@ passport.use(new GitHubStrategy(
                         .from('users')
                         .update({
                             githubId: profile.id,
-                            avatar: existingUser.avatar || avatar // Keep existing, or update if empty
+                            avatar_url: existingUser.avatar_url || avatar // FIX: avatar -> avatar_url
                         })
                         .eq('id', existingUser.id)
                         .select()
@@ -152,7 +152,7 @@ passport.use(new GitHubStrategy(
                     const newUser = {
                         email: email,
                         name: profile.displayName || profile.username,
-                        avatar: avatar,
+                        avatar_url: avatar, // FIX: avatar -> avatar_url
                         githubId: profile.id,
                         provider: 'github',
                         credits: 5,
@@ -211,7 +211,7 @@ passport.use(new GoogleStrategy(
                         .from('users')
                         .update({
                             googleId: profile.id,
-                            avatar: existingUser.avatar || avatar
+                            avatar_url: existingUser.avatar_url || avatar // FIX: avatar -> avatar_url
                         })
                         .eq('id', existingUser.id)
                         .select()
@@ -224,7 +224,7 @@ passport.use(new GoogleStrategy(
                     const newUser = {
                         email: email,
                         name: profile.displayName || profile.name?.givenName,
-                        avatar: avatar,
+                        avatar_url: avatar, // FIX: avatar -> avatar_url
                         googleId: profile.id,
                         provider: 'google',
                         credits: 5,
@@ -280,11 +280,16 @@ app.post('/api/auth/register', async (req, res) => {
 
     try {
         // Check existing
-        const { data: existing } = await supabase
+        const { data: existing, error: findError } = await supabase
             .from('users')
             .select('id')
             .eq('email', email)
             .single();
+
+        if (findError && findError.code !== 'PGRST116') { // PGRST116 is "not found", which is good here
+            console.error('Supabase Find Error:', findError);
+            return res.status(500).json({ error: `Erro ao verificar usuário: ${findError.message}` });
+        }
 
         if (existing) {
             return res.status(400).json({ error: 'Email já cadastrado' });
@@ -294,12 +299,13 @@ app.post('/api/auth/register', async (req, res) => {
 
         const newUser = {
             email,
-            password: hashedPassword,
+            password_hash: hashedPassword, // FIX: matches schema
             name: name || email.split('@')[0],
             username: username || email.split('@')[0],
             credits: 5,
             plan: 'free',
             provider: 'email',
+            avatar_url: null, // FIX: matches schema
             created_at: new Date().toISOString()
         };
 
@@ -309,7 +315,11 @@ app.post('/api/auth/register', async (req, res) => {
             .select()
             .single();
 
-        if (error) throw error;
+        if (error) {
+            console.error('Supabase Insert Error:', error);
+            // DEBUG: Returning full error to client
+            return res.status(500).json({ error: `Erro Banco de Dados: ${error.message || error.details}` });
+        }
 
         const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
 
@@ -320,7 +330,7 @@ app.post('/api/auth/register', async (req, res) => {
         });
     } catch (err) {
         console.error('Register Error:', err);
-        res.status(500).json({ error: 'Erro ao criar conta' });
+        res.status(500).json({ error: `Erro Interno: ${err.message}` });
     }
 });
 
@@ -336,12 +346,17 @@ app.post('/api/auth/login', async (req, res) => {
             .single();
 
         if (error || !user) {
-            return res.status(401).json({ error: 'Credenciais inválidas' });
+            return res.status(401).json({ error: 'Email não encontrado ou erro no banco.' });
         }
 
-        const valid = await bcrypt.compare(password, user.password);
+        // Check if user has password (might be oauth only)
+        if (!user.password_hash) { // FIX: password -> password_hash
+            return res.status(401).json({ error: 'Esta conta usa login social (Google/GitHub). Por favor, entre por lá.' });
+        }
+
+        const valid = await bcrypt.compare(password, user.password_hash); // FIX: password -> password_hash
         if (!valid) {
-            return res.status(401).json({ error: 'Credenciais inválidas' });
+            return res.status(401).json({ error: 'Senha incorreta' });
         }
 
         const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
@@ -352,7 +367,7 @@ app.post('/api/auth/login', async (req, res) => {
         });
     } catch (err) {
         console.error('Login Error:', err);
-        res.status(500).json({ error: 'Erro ao fazer login' });
+        res.status(500).json({ error: `Erro no Login: ${err.message}` });
     }
 });
 
