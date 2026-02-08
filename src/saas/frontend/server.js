@@ -13,11 +13,17 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import session from 'express-session';
 import { createClient } from '@supabase/supabase-js';
 
-// Admin Routes imports
-import proxiesRouter from './admin/routes/proxies.js';
-import accountsRouter from './admin/routes/accounts.js';
-import usersRouter from './admin/routes/users.js';
-import statsRouter from './admin/routes/stats.js';
+// Admin Routes - Dynamic to avoid crashes if files are missing
+let proxiesRouter = null, accountsRouter = null, usersRouter = null, statsRouter = null;
+try {
+    proxiesRouter = (await import('./admin/routes/proxies.js')).default;
+    accountsRouter = (await import('./admin/routes/accounts.js')).default;
+    usersRouter = (await import('./admin/routes/users.js')).default;
+    statsRouter = (await import('./admin/routes/stats.js')).default;
+    console.log('✅ Admin routes loaded');
+} catch (e) {
+    console.warn('⚠️ Admin routes not loaded:', e.message);
+}
 
 // ================== Supabase Config ==================
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -332,10 +338,10 @@ app.get('/api/auth/google/callback',
 );
 
 // ================== ADMIN ROUTES (Protected) ==================
-app.use('/api/admin/proxies', proxiesRouter);
-app.use('/api/admin/accounts', accountsRouter);
-app.use('/api/admin/users', usersRouter);
-app.use('/api/admin/stats', statsRouter);
+if (proxiesRouter) app.use('/api/admin/proxies', proxiesRouter);
+if (accountsRouter) app.use('/api/admin/accounts', accountsRouter);
+if (usersRouter) app.use('/api/admin/users', usersRouter);
+if (statsRouter) app.use('/api/admin/stats', statsRouter);
 
 // ================== CAMPAIGN ROUTES ==================
 
@@ -471,6 +477,12 @@ async function processCampaign(campaignId) {
     console.log(`✅ Campanha ${campaignId} concluída (Simulada)!`);
 }
 
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-});
+// For Vercel Serverless - export the app
+export default app;
+
+// Local development
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+        console.log(`🚀 Server running on port ${PORT}`);
+    });
+}
