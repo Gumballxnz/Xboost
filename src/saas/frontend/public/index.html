@@ -505,7 +505,7 @@
             <!-- Starter -->
             <div class="pricing-card">
                 <h3>Starter</h3>
-                <div class="price">500 <span class="currency">MZN</span></div>
+                <div class="price">125 <span class="currency">MZN</span></div>
                 <ul class="features-list">
                     <li><svg fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd"
@@ -523,14 +523,14 @@
                                 clip-rule="evenodd"></path>
                         </svg> Dashboard completo</li>
                 </ul>
-                <button onclick="openLogin()" class="btn btn-outline btn-full">Comprar</button>
+                <button onclick="openRegister()" class="btn btn-outline btn-full">Testar Agora</button>
             </div>
 
             <!-- Pro -->
             <div class="pricing-card popular">
                 <div class="popular-badge">POPULAR</div>
                 <h3>Pro</h3>
-                <div class="price">900 <span class="currency">MZN</span></div>
+                <div class="price">225 <span class="currency">MZN</span></div>
                 <ul class="features-list">
                     <li><svg fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd"
@@ -553,13 +553,13 @@
                                 clip-rule="evenodd"></path>
                         </svg> API de integração</li>
                 </ul>
-                <button onclick="openLogin()" class="btn btn-primary btn-full">Comprar</button>
+                <button onclick="openRegister()" class="btn btn-primary btn-full">Testar Agora</button>
             </div>
 
             <!-- Business -->
             <div class="pricing-card">
                 <h3>Business</h3>
-                <div class="price">2500 <span class="currency">MZN</span></div>
+                <div class="price">625 <span class="currency">MZN</span></div>
                 <ul class="features-list">
                     <li><svg fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd"
@@ -582,7 +582,7 @@
                                 clip-rule="evenodd"></path>
                         </svg> White-label</li>
                 </ul>
-                <button onclick="openLogin()" class="btn btn-outline btn-full">Contato</button>
+                <button onclick="openRegister()" class="btn btn-outline btn-full">Testar Agora</button>
             </div>
         </div>
     </section>
@@ -651,11 +651,12 @@
 
     <!-- Modal Login -->
     <div id="login-modal" class="modal">
-        <div class="modal-content">
-            <h2 class="mb-4">Entrar no XBoost</h2>
-            <p class="text-muted mb-4">Escolha como deseja continuar</p>
+        <div class="modal-content" style="max-width: 450px;">
+            <h2 class="mb-4" id="modal-title">Entrar no XBoost</h2>
+            <p class="text-muted mb-4" id="modal-subtitle">Acesse sua conta</p>
 
-            <a href="http://16.170.133.174/api/auth/github" class="oauth-btn" style="background: #333;">
+            <!-- OAuth Buttons -->
+            <a href="/api/auth/github" class="oauth-btn" style="background: #333;">
                 <svg fill="currentColor" width="20" height="20" viewBox="0 0 24 24">
                     <path
                         d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
@@ -663,8 +664,7 @@
                 Continuar com GitHub
             </a>
 
-            <a href="http://16.170.133.174/api/auth/google" class="oauth-btn"
-                style="background: white; color: black; border-color: white;">
+            <a href="/api/auth/google" class="oauth-btn" style="background: white; color: black; border-color: white;">
                 <svg width="20" height="20" viewBox="0 0 24 24">
                     <path fill="#EA4335"
                         d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.087 0 12 0 7.31 0 3.255 2.69 1.291 6.617l3.975 3.148Z" />
@@ -678,14 +678,214 @@
                 Continuar com Google
             </a>
 
+            <div style="display: flex; align-items: center; margin: 20px 0;">
+                <div style="flex: 1; height: 1px; background: var(--border);"></div>
+                <span style="padding: 0 12px; font-size: 0.8rem; color: var(--text-muted);">ou com email</span>
+                <div style="flex: 1; height: 1px; background: var(--border);"></div>
+            </div>
+
+            <!-- Registration Form (hidden by default) -->
+            <form id="register-form" onsubmit="handleRegister(event)" style="display: none;">
+                <div style="margin-bottom: 16px;">
+                    <label
+                        style="display: block; margin-bottom: 6px; font-size: 0.85rem; color: var(--text-muted);">Nome
+                        Completo *</label>
+                    <input type="text" id="reg-name" required minlength="3"
+                        style="width: 100%; padding: 12px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; color: white;"
+                        placeholder="Seu nome">
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label
+                        style="display: block; margin-bottom: 6px; font-size: 0.85rem; color: var(--text-muted);">Nome
+                        de Usuário *</label>
+                    <input type="text" id="reg-username" required minlength="3" pattern="[a-zA-Z0-9_]+"
+                        style="width: 100%; padding: 12px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; color: white;"
+                        placeholder="usuario123">
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label
+                        style="display: block; margin-bottom: 6px; font-size: 0.85rem; color: var(--text-muted);">Email
+                        *</label>
+                    <input type="email" id="reg-email" required
+                        style="width: 100%; padding: 12px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; color: white;"
+                        placeholder="seu@email.com">
+                </div>
+                <div style="margin-bottom: 16px; position: relative;">
+                    <label
+                        style="display: block; margin-bottom: 6px; font-size: 0.85rem; color: var(--text-muted);">Senha
+                        * (mínimo 8 caracteres)</label>
+                    <input type="password" id="reg-password" required minlength="8"
+                        pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                        title="Deve conter pelo menos 8 caracteres, uma maiúscula, uma minúscula e um número"
+                        style="width: 100%; padding: 12px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; color: white; padding-right: 40px;"
+                        placeholder="••••••••">
+                    <span onclick="togglePassword('reg-password', this)"
+                        style="position: absolute; right: 12px; top: 36px; cursor: pointer; color: var(--text-muted);">👁️</span>
+                </div>
+                <div style="margin-bottom: 20px; position: relative;">
+                    <label
+                        style="display: block; margin-bottom: 6px; font-size: 0.85rem; color: var(--text-muted);">Confirmar
+                        Senha *</label>
+                    <input type="password" id="reg-password-confirm" required
+                        style="width: 100%; padding: 12px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; color: white; padding-right: 40px;"
+                        placeholder="••••••••">
+                    <span onclick="togglePassword('reg-password-confirm', this)"
+                        style="position: absolute; right: 12px; top: 36px; cursor: pointer; color: var(--text-muted);">👁️</span>
+                </div>
+                <p id="reg-error" style="color: #ef4444; font-size: 0.85rem; margin-bottom: 12px; display: none;"></p>
+                <button type="submit" class="btn btn-primary btn-full">Criar Conta</button>
+                <p style="text-align: center; margin-top: 16px; font-size: 0.85rem; color: var(--text-muted);">
+                    Já tem conta? <a href="#" onclick="showLoginForm()" style="color: var(--primary);">Entrar</a>
+                </p>
+            </form>
+
+            <!-- Login Form -->
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div style="margin-bottom: 16px;">
+                    <label
+                        style="display: block; margin-bottom: 6px; font-size: 0.85rem; color: var(--text-muted);">Email</label>
+                    <input type="email" id="login-email" required
+                        style="width: 100%; padding: 12px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; color: white;"
+                        placeholder="seu@email.com">
+                </div>
+                <div style="margin-bottom: 20px; position: relative;">
+                    <label
+                        style="display: block; margin-bottom: 6px; font-size: 0.85rem; color: var(--text-muted);">Senha</label>
+                    <input type="password" id="login-password" required
+                        style="width: 100%; padding: 12px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; color: white; padding-right: 40px;"
+                        placeholder="••••••••">
+                    <span onclick="togglePassword('login-password', this)"
+                        style="position: absolute; right: 12px; top: 36px; cursor: pointer; color: var(--text-muted);">👁️</span>
+                </div>
+                <p id="login-error" style="color: #ef4444; font-size: 0.85rem; margin-bottom: 12px; display: none;"></p>
+                <button type="submit" class="btn btn-primary btn-full">Entrar</button>
+                <p style="text-align: center; margin-top: 16px; font-size: 0.85rem; color: var(--text-muted);">
+                    Não tem conta? <a href="#" onclick="showRegisterForm()" style="color: var(--primary);">Criar
+                        agora</a>
+                </p>
+            </form>
+
             <button onclick="closeLogin()" class="btn btn-outline"
                 style="width: 100%; margin-top: 16px;">Cancelar</button>
         </div>
     </div>
 
     <script>
-        function openLogin() { document.getElementById('login-modal').classList.add('active'); }
-        function closeLogin() { document.getElementById('login-modal').classList.remove('active'); }
+        function openLogin() {
+            document.getElementById('login-modal').classList.add('active');
+            showLoginForm();
+        }
+
+        function openRegister() {
+            document.getElementById('login-modal').classList.add('active');
+            showRegisterForm();
+        }
+
+        function closeLogin() {
+            document.getElementById('login-modal').classList.remove('active');
+        }
+
+        function showLoginForm() {
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('register-form').style.display = 'none';
+            document.getElementById('modal-title').innerText = 'Entrar no XBoost';
+            document.getElementById('modal-subtitle').innerText = 'Acesse sua conta';
+        }
+
+        function showRegisterForm() {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('register-form').style.display = 'block';
+            document.getElementById('modal-title').innerText = 'Criar Conta';
+            document.getElementById('modal-subtitle').innerText = 'Preencha todos os campos';
+        }
+
+        function togglePassword(inputId, icon) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerText = '🙈';
+            } else {
+                input.type = 'password';
+                icon.innerText = '👁️';
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            const username = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            const confirmPassword = document.getElementById('reg-password-confirm').value;
+            const errorEl = document.getElementById('reg-error');
+
+            // Validations
+            if (password !== confirmPassword) {
+                errorEl.innerText = 'As senhas não coincidem!';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            if (password.length < 8 || !/(?=.*\d)(?=.*[a-z])(?=.*[A-Z])/.test(password)) {
+                errorEl.innerText = 'Senha fraca! Use maiúsculas, minúsculas e números.';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, username, email, password })
+                });
+                const data = await res.json();
+
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                    window.location.reload();
+                } else {
+                    errorEl.innerText = data.error || 'Erro ao criar conta';
+                    errorEl.style.display = 'block';
+                }
+            } catch (err) {
+                errorEl.innerText = 'Erro de conexão';
+                errorEl.style.display = 'block';
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const errorEl = document.getElementById('login-error');
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                    window.location.reload();
+                } else {
+                    errorEl.innerText = data.error || 'Credenciais inválidas';
+                    errorEl.style.display = 'block';
+                }
+            } catch (err) {
+                errorEl.innerText = 'Erro de conexão';
+                errorEl.style.display = 'block';
+            }
+        }
+
+        // Handle OAuth redirect
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('token')) {
+            localStorage.setItem('token', params.get('token'));
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
     </script>
     <script src="app.js"></script>
 </body>

@@ -200,7 +200,7 @@ function authMiddleware(req, res, next) {
 
 // Registro
 app.post('/api/auth/register', async (req, res) => {
-    const { email, password, name } = req.body;
+    const { email, password, name, username } = req.body;
 
     if (!email || !password) {
         return res.status(400).json({ error: 'Email e senha obrigatórios' });
@@ -224,6 +224,7 @@ app.post('/api/auth/register', async (req, res) => {
             email,
             password: hashedPassword,
             name: name || email.split('@')[0],
+            username: username || email.split('@')[0],
             credits: 5,
             plan: 'free',
             provider: 'email',
