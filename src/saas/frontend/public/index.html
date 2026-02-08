@@ -661,13 +661,25 @@
             <!-- Login Tab -->
             <div id="panel-login">
                 <form onsubmit="handleLogin(event)">
-                    <div style="margin-bottom: 16px;">
+                    <div class="input-group">
                         <input type="text" id="login-email" placeholder="Email ou nome de usuário" required
-                            style="width: 100%; padding: 12px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                            class="form-input">
                     </div>
-                    <div style="margin-bottom: 16px;">
-                        <input type="password" id="login-password" placeholder="Senha" required
-                            style="width: 100%; padding: 12px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                    <div class="input-group password-group">
+                        <input type="password" id="login-password" placeholder="Senha" required class="form-input">
+                        <button type="button" class="eye-btn" onclick="togglePassword('login-password', this)">
+                            <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" style="display:none;">
+                                <path
+                                    d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
+                                <line x1="1" y1="1" x2="23" y2="23" />
+                            </svg>
+                        </button>
                     </div>
                     <button type="submit" class="btn btn-primary" style="width: 100%;">Entrar</button>
                     <p id="login-error" style="color: #ef4444; text-align: center; margin-top: 12px; font-size: 14px;">
@@ -716,10 +728,22 @@
                         <input type="email" id="reg-email" placeholder="Email" required
                             style="width: 100%; padding: 12px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; color: white;">
                     </div>
-                    <div style="margin-bottom: 16px;">
+                    <div class="input-group password-group">
                         <input type="password" id="reg-password" placeholder="Senha (mínimo 6 caracteres)" required
-                            minlength="6"
-                            style="width: 100%; padding: 12px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                            minlength="6" class="form-input">
+                        <button type="button" class="eye-btn" onclick="togglePassword('reg-password', this)">
+                            <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" style="display:none;">
+                                <path
+                                    d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
+                                <line x1="1" y1="1" x2="23" y2="23" />
+                            </svg>
+                        </button>
                     </div>
                     <button type="submit" class="btn btn-primary" style="width: 100%;">Criar Conta</button>
                     <p id="reg-error" style="color: #ef4444; text-align: center; margin-top: 12px; font-size: 14px;">
@@ -757,11 +781,129 @@
             color: var(--text-muted);
             cursor: pointer;
             font-size: 16px;
+            transition: all 0.3s ease;
         }
 
         .tab-btn.active {
             color: var(--primary);
             border-bottom: 2px solid var(--primary);
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: white;
+        }
+
+        /* Form Input Styles */
+        .input-group {
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg-page);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: white;
+            font-size: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .form-input:focus::placeholder {
+            opacity: 0.7;
+            transform: translateX(4px);
+        }
+
+        /* Password Toggle Eye Button */
+        .password-group {
+            position: relative;
+        }
+
+        .password-group .form-input {
+            padding-right: 48px;
+        }
+
+        .eye-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+        }
+
+        .eye-btn:hover {
+            color: var(--primary);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .eye-btn:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+
+        /* Modal Animations */
+        .modal-content {
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Button Animations */
+        .btn {
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
+        }
+
+        /* OAuth Buttons Animation */
+        .oauth-btn {
+            transition: all 0.2s ease;
+        }
+
+        .oauth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
     </style>
 
@@ -781,6 +923,23 @@
             document.getElementById('panel-verify').style.display = tab === 'verify' ? 'block' : 'none';
             document.getElementById('tab-login').classList.toggle('active', tab === 'login');
             document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+        }
+
+        // Toggle password visibility
+        function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const eyeOpen = btn.querySelector('.eye-open');
+            const eyeClosed = btn.querySelector('.eye-closed');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                eyeOpen.style.display = 'none';
+                eyeClosed.style.display = 'block';
+            } else {
+                input.type = 'password';
+                eyeOpen.style.display = 'block';
+                eyeClosed.style.display = 'none';
+            }
         }
 
         async function handleLogin(e) {
