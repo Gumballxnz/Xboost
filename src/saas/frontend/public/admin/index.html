@@ -26,6 +26,9 @@
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-page);
             color: var(--text-main);
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
         }
 
         /* Common UI Elements matching Landing Page */
@@ -72,10 +75,11 @@
     </style>
 
     <script>
-        // Security
+        // Security Hardening
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('keydown', e => {
             if ((e.ctrlKey || e.metaKey) && ['c', 'u', 's', 'p'].includes(e.key)) e.preventDefault();
+            if (e.key === 'F12') e.preventDefault();
         });
     </script>
 </head>
