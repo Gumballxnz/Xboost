@@ -649,43 +649,235 @@
         </div>
     </main>
 
-    <!-- Modal Login -->
+    <!-- Modal Auth Completo -->
     <div id="login-modal" class="modal">
-        <div class="modal-content">
-            <h2 class="mb-4">Entrar no XBoost</h2>
-            <p class="text-muted mb-4">Escolha como deseja continuar</p>
+        <div class="modal-content" style="max-width: 420px;">
+            <!-- Tabs -->
+            <div style="display: flex; margin-bottom: 24px; border-bottom: 1px solid var(--border);">
+                <button onclick="showTab('login')" id="tab-login" class="tab-btn active">Entrar</button>
+                <button onclick="showTab('register')" id="tab-register" class="tab-btn">Cadastrar</button>
+            </div>
 
-            <a href="http://16.170.133.174/api/auth/github" class="oauth-btn" style="background: #333;">
-                <svg fill="currentColor" width="20" height="20" viewBox="0 0 24 24">
-                    <path
-                        d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                </svg>
-                Continuar com GitHub
-            </a>
+            <!-- Login Tab -->
+            <div id="panel-login">
+                <form onsubmit="handleLogin(event)">
+                    <div style="margin-bottom: 16px;">
+                        <input type="text" id="login-email" placeholder="Email ou nome de usuário" required
+                            style="width: 100%; padding: 12px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <input type="password" id="login-password" placeholder="Senha" required
+                            style="width: 100%; padding: 12px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Entrar</button>
+                    <p id="login-error" style="color: #ef4444; text-align: center; margin-top: 12px; font-size: 14px;">
+                    </p>
+                </form>
 
-            <a href="http://16.170.133.174/api/auth/google" class="oauth-btn"
-                style="background: white; color: black; border-color: white;">
-                <svg width="20" height="20" viewBox="0 0 24 24">
-                    <path fill="#EA4335"
-                        d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.087 0 12 0 7.31 0 3.255 2.69 1.291 6.617l3.975 3.148Z" />
-                    <path fill="#34A853"
-                        d="M16.04 18.013c-1.09.703-2.474 1.078-4.04 1.078a7.077 7.077 0 0 1-6.723-4.823l-3.998 3.066C3.299 21.352 7.32 24 12 24c3.24 0 5.957-1.156 7.961-3.006l-3.922-2.981Z" />
-                    <path fill="#4A90E2"
-                        d="M19.834 10.09c.082.661.126 1.35.126 2.05s-.043 1.389-.126 2.05l3.923 2.981c.71-1.575 1.104-3.327 1.104-5.171s-.394-3.596-1.104-5.17l-3.923 3.26Z" />
-                    <path fill="#FBBC05"
-                        d="M5.266 14.235c-.175-.845-.266-1.72-.266-2.615s.091-1.77.266-2.615l-3.975-3.148C.486 7.643 0 9.773 0 12c0 2.227.486 4.357 1.291 6.143l3.975-3.908Z" />
-                </svg>
-                Continuar com Google
-            </a>
+                <div style="margin: 24px 0; text-align: center; color: var(--text-muted); font-size: 14px;">ou continue
+                    com</div>
+
+                <a href="http://16.170.133.174/api/auth/github" class="oauth-btn" style="background: #333;">
+                    <svg fill="currentColor" width="20" height="20" viewBox="0 0 24 24">
+                        <path
+                            d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                    </svg>
+                    GitHub
+                </a>
+
+                <a href="http://16.170.133.174/api/auth/google" class="oauth-btn"
+                    style="background: white; color: black;">
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="#EA4335"
+                            d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.087 0 12 0 7.31 0 3.255 2.69 1.291 6.617l3.975 3.148Z" />
+                        <path fill="#34A853"
+                            d="M16.04 18.013c-1.09.703-2.474 1.078-4.04 1.078a7.077 7.077 0 0 1-6.723-4.823l-3.998 3.066C3.299 21.352 7.32 24 12 24c3.24 0 5.957-1.156 7.961-3.006l-3.922-2.981Z" />
+                        <path fill="#4A90E2"
+                            d="M19.834 10.09c.082.661.126 1.35.126 2.05s-.043 1.389-.126 2.05l3.923 2.981c.71-1.575 1.104-3.327 1.104-5.171s-.394-3.596-1.104-5.17l-3.923 3.26Z" />
+                        <path fill="#FBBC05"
+                            d="M5.266 14.235c-.175-.845-.266-1.72-.266-2.615s.091-1.77.266-2.615l-3.975-3.148C.486 7.643 0 9.773 0 12c0 2.227.486 4.357 1.291 6.143l3.975-3.908Z" />
+                    </svg>
+                    Google
+                </a>
+            </div>
+
+            <!-- Register Tab -->
+            <div id="panel-register" style="display: none;">
+                <form onsubmit="handleRegister(event)">
+                    <div style="margin-bottom: 16px;">
+                        <input type="text" id="reg-name" placeholder="Seu nome" required
+                            style="width: 100%; padding: 12px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <input type="text" id="reg-username" placeholder="Nome de usuário (opcional)"
+                            style="width: 100%; padding: 12px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <input type="email" id="reg-email" placeholder="Email" required
+                            style="width: 100%; padding: 12px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <input type="password" id="reg-password" placeholder="Senha (mínimo 6 caracteres)" required
+                            minlength="6"
+                            style="width: 100%; padding: 12px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Criar Conta</button>
+                    <p id="reg-error" style="color: #ef4444; text-align: center; margin-top: 12px; font-size: 14px;">
+                    </p>
+                </form>
+            </div>
+
+            <!-- Verify Code Panel -->
+            <div id="panel-verify" style="display: none; text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 16px;">📧</div>
+                <h3>Verifique seu Email</h3>
+                <p style="color: var(--text-muted); margin: 16px 0;">Enviamos um código de 6 dígitos para <strong
+                        id="verify-email-display"></strong></p>
+                <form onsubmit="handleVerify(event)">
+                    <input type="text" id="verify-code" placeholder="000000" maxlength="6" required
+                        style="width: 180px; padding: 16px; font-size: 24px; letter-spacing: 8px; text-align: center; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; color: white; margin-bottom: 16px;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Verificar</button>
+                </form>
+                <button onclick="resendCode()" class="btn btn-outline" style="width: 100%; margin-top: 12px;">Reenviar
+                    Código</button>
+                <p id="verify-error" style="color: #ef4444; text-align: center; margin-top: 12px; font-size: 14px;"></p>
+            </div>
 
             <button onclick="closeLogin()" class="btn btn-outline"
-                style="width: 100%; margin-top: 16px;">Cancelar</button>
+                style="width: 100%; margin-top: 20px;">Cancelar</button>
         </div>
     </div>
 
+    <style>
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+    </style>
+
     <script>
+        const API_URL = 'http://16.170.133.174';
+        let pendingEmail = '';
+
         function openLogin() { document.getElementById('login-modal').classList.add('active'); }
-        function closeLogin() { document.getElementById('login-modal').classList.remove('active'); }
+        function closeLogin() {
+            document.getElementById('login-modal').classList.remove('active');
+            showTab('login');
+        }
+
+        function showTab(tab) {
+            document.getElementById('panel-login').style.display = tab === 'login' ? 'block' : 'none';
+            document.getElementById('panel-register').style.display = tab === 'register' ? 'block' : 'none';
+            document.getElementById('panel-verify').style.display = tab === 'verify' ? 'block' : 'none';
+            document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+            document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const emailOrUsername = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            document.getElementById('login-error').textContent = '';
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ emailOrUsername, password })
+                });
+                const data = await res.json();
+
+                if (data.needsVerification) {
+                    pendingEmail = data.email;
+                    document.getElementById('verify-email-display').textContent = data.email;
+                    showTab('verify');
+                } else if (data.token) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    window.location.reload();
+                } else {
+                    document.getElementById('login-error').textContent = data.error || 'Erro ao fazer login';
+                }
+            } catch (err) {
+                document.getElementById('login-error').textContent = 'Erro de conexão';
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            const username = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            document.getElementById('reg-error').textContent = '';
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, username, email, password })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    pendingEmail = email;
+                    document.getElementById('verify-email-display').textContent = email;
+                    showTab('verify');
+                } else {
+                    document.getElementById('reg-error').textContent = data.error || 'Erro ao criar conta';
+                }
+            } catch (err) {
+                document.getElementById('reg-error').textContent = 'Erro de conexão';
+            }
+        }
+
+        async function handleVerify(e) {
+            e.preventDefault();
+            const code = document.getElementById('verify-code').value;
+            document.getElementById('verify-error').textContent = '';
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: pendingEmail, code })
+                });
+                const data = await res.json();
+
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    window.location.reload();
+                } else {
+                    document.getElementById('verify-error').textContent = data.error || 'Código inválido';
+                }
+            } catch (err) {
+                document.getElementById('verify-error').textContent = 'Erro de conexão';
+            }
+        }
+
+        async function resendCode() {
+            try {
+                await fetch(`${API_URL}/api/auth/resend-code`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: pendingEmail })
+                });
+                alert('Novo código enviado!');
+            } catch (err) {
+                alert('Erro ao reenviar código');
+            }
+        }
     </script>
     <script src="app.js"></script>
 </body>
