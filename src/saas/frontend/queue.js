@@ -1,7 +1,7 @@
 // =====================================================
 // QUEUE.JS - BullMQ Configuration for XBoost SaaS
 // =====================================================
-import { Queue, Worker, QueueEvents } from 'bullmq';
+import { Queue, QueueEvents } from 'bullmq';
 import IORedis from 'ioredis';
 
 // Redis connection (use environment variables in production)
@@ -11,119 +11,117 @@ const REDIS_CONFIG = {
     maxRetriesPerRequest: null
 };
 
-// Create Redis connection
-const connection = new IORedis(REDIS_CONFIG);
-
-// ================== QUEUES ==================
-
 // Vercel Serverless Optimization:
-// If on Vercel, DO NOT connect to Redis. Return dummy objects.
 const isVercel = process.env.VERCEL || process.env.NEXT_PUBLIC_VERCEL_ENV;
+
+let connection = null;
+let campaignQueue, accountQueue, campaignEvents;
+
+// Function placeholders
+let addCampaignJob, addAccountCreationJob, getQueueStats;
 
 if (isVercel) {
     console.log('⚡ Vercel Environment: Skipping Redis Queue initialization.');
-    export const campaignQueue = { add: async () => ({ id: 'mock-job-id' }) };
-    export const accountQueue = { add: async () => ({ id: 'mock-job-id' }) };
-    export const campaignEvents = { on: () => { } };
-    export function addCampaignJob() { console.log('Mock addCampaignJob'); }
-    export function addAccountCreationJob() { console.log('Mock addAccountCreationJob'); }
-    export function getQueueStats() { return { campaigns: { waiting: 0, active: 0, completed: 0, failed: 0 } }; }
-    export const connection = null;
+
+    // Mocks
+    connection = null;
+    campaignQueue = {
+        add: async () => ({ id: 'mock-job-id' }),
+        getWaitingCount: async () => 0,
+        getActiveCount: async () => 0,
+        getCompletedCount: async () => 0,
+        getFailedCount: async () => 0
+    };
+    accountQueue = { add: async () => ({ id: 'mock-job-id' }) };
+    campaignEvents = { on: () => { } };
+
+    addCampaignJob = async (campaign) => {
+        console.log(`[MOCK] Campaign job added: ${campaign.id}`);
+        return { id: 'mock-id' };
+    };
+
+    addAccountCreationJob = async (accountData) => {
+        console.log(`[MOCK] Account job added: ${accountData.email}`);
+        return { id: 'mock-id' };
+    };
+
+    getQueueStats = async () => {
+        return {
+            campaigns: { waiting: 0, active: 0, completed: 0, failed: 0 }
+        };
+    };
+
 } else {
-    // Normal Redis Initialization (Local/VPS)
-    export const campaignQueue = new Queue('campaigns', { connection });
-    export const accountQueue = new Queue('accounts', { connection });
-    export const campaignEvents = new QueueEvents('campaigns', { connection });
-    // ... (Functions below will use these queues)
-}
+    // Real Redis Connection
+    connection = new IORedis(REDIS_CONFIG);
 
-// Listen to campaign events
-campaignEvents.on('completed', ({ jobId, returnvalue }) => {
-    console.log(`✅ Campaign job ${jobId} completed:`, returnvalue);
-});
+    campaignQueue = new Queue('campaigns', { connection });
+    accountQueue = new Queue('accounts', { connection });
+    campaignEvents = new QueueEvents('campaigns', { connection });
 
-campaignEvents.on('failed', ({ jobId, failedReason }) => {
-    console.log(`❌ Campaign job ${jobId} failed:`, failedReason);
-});
-
-campaignEvents.on('progress', ({ jobId, data }) => {
-    console.log(`📊 Campaign job ${jobId} progress:`, data);
-});
-
-// ================== JOB CREATORS ==================
-
-/**
- * Add a campaign job to the queue
- * @param {Object} campaign - Campaign data
- * @param {string} campaign.id - Campaign ID
- * @param {string} campaign.postUrl - Twitter post URL
- * @param {number} campaign.totalComments - Number of comments to post
- * @param {string} campaign.userId - User who created the campaign
- */
-export async function addCampaignJob(campaign) {
-    const job = await campaignQueue.add('process-campaign', {
-        campaignId: campaign.id,
-        postUrl: campaign.postUrl,
-        totalComments: campaign.totalComments,
-        userId: campaign.userId,
-        createdAt: new Date().toISOString()
-    }, {
-        attempts: 3,
-        backoff: {
-            type: 'exponential',
-            delay: 5000
-        },
-        removeOnComplete: 100,
-        removeOnFail: 50
+    // Listen to campaign events
+    campaignEvents.on('completed', ({ jobId, returnvalue }) => {
+        console.log(`✅ Campaign job ${jobId} completed:`, returnvalue);
     });
 
-    console.log(`📋 Campaign job added: ${job.id}`);
-    return job;
-}
-
-/**
- * Add an account creation job to the queue
- * @param {Object} accountData - Account data
- */
-export async function addAccountCreationJob(accountData) {
-    const job = await accountQueue.add('create-account', {
-        ...accountData,
-        createdAt: new Date().toISOString()
-    }, {
-        attempts: 2,
-        backoff: {
-            type: 'fixed',
-            delay: 30000
-        }
+    campaignEvents.on('failed', ({ jobId, failedReason }) => {
+        console.log(`❌ Campaign job ${jobId} failed:`, failedReason);
     });
 
-    console.log(`👤 Account creation job added: ${job.id}`);
-    return job;
-}
+    campaignEvents.on('progress', ({ jobId, data }) => {
+        console.log(`📊 Campaign job ${jobId} progress:`, data);
+    });
 
-// ================== QUEUE STATS ==================
+    addCampaignJob = async (campaign) => {
+        const job = await campaignQueue.add('process-campaign', {
+            campaignId: campaign.id,
+            postUrl: campaign.postUrl,
+            totalComments: campaign.totalComments,
+            userId: campaign.userId,
+            createdAt: new Date().toISOString()
+        }, {
+            attempts: 3,
+            backoff: { type: 'exponential', delay: 5000 },
+            removeOnComplete: 100,
+            removeOnFail: 50
+        });
+        console.log(`📋 Campaign job added: ${job.id}`);
+        return job;
+    };
 
-export async function getQueueStats() {
-    const [
-        campaignWaiting,
-        campaignActive,
-        campaignCompleted,
-        campaignFailed
-    ] = await Promise.all([
-        campaignQueue.getWaitingCount(),
-        campaignQueue.getActiveCount(),
-        campaignQueue.getCompletedCount(),
-        campaignQueue.getFailedCount()
-    ]);
+    addAccountCreationJob = async (accountData) => {
+        const job = await accountQueue.add('create-account', {
+            ...accountData,
+            createdAt: new Date().toISOString()
+        }, {
+            attempts: 2,
+            backoff: { type: 'fixed', delay: 30000 }
+        });
+        console.log(`👤 Account creation job added: ${job.id}`);
+        return job;
+    };
 
-    return {
-        campaigns: {
-            waiting: campaignWaiting,
-            active: campaignActive,
-            completed: campaignCompleted,
-            failed: campaignFailed
-        }
+    getQueueStats = async () => {
+        const [waiting, active, completed, failed] = await Promise.all([
+            campaignQueue.getWaitingCount(),
+            campaignQueue.getActiveCount(),
+            campaignQueue.getCompletedCount(),
+            campaignQueue.getFailedCount()
+        ]);
+
+        return {
+            campaigns: { waiting, active, completed, failed }
+        };
     };
 }
 
-export { connection };
+export {
+    connection,
+    campaignQueue,
+    accountQueue,
+    campaignEvents,
+    addCampaignJob,
+    addAccountCreationJob,
+    getQueueStats
+};
+
