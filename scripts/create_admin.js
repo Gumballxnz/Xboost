@@ -1,102 +1,118 @@
 import { createClient } from '@supabase/supabase-js';
-import bcrypt from 'bcryptjs'; // Using bcryptjs as in server.js
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
-// Load env
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const rootDir = path.join(__dirname, '..');
-
-dotenv.config({ path: path.join(rootDir, '.env') });
-
-const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseKey) {
-    console.error("❌ SUPABASE_URL or SUPABASE_KEY missing in .env");
-    process.exit(1);
-}
+// Supabase credentials (service role key for admin operations)
+const supabaseUrl = 'https://mclwqrweybyemzetlyke.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jbHdxcndleWJ5ZW16ZXRseWtlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDQ5NzM4NSwiZXhwIjoyMDg2MDczMzg1fQ.3JOoABqnMckuQ-Dtq4_xu--RH_R0vAPBBQqu_IG4220';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function createAdmin() {
+async function createAdminUser() {
     const email = 'ghostgumball39@gmail.com';
     const password = 'Roman700';
+    const name = 'Admin';
+    const username = 'admin';
 
-    console.log(`👤 Creating Admin: ${email}`);
+    console.log('🔐 Criando usuário admin via Supabase Auth...');
 
-    // 1. Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    try {
+        // First, try to create user via Supabase Auth
+        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+            email,
+            password,
+            email_confirm: true, // Auto-confirm email
+            user_metadata: {
+                name,
+                username,
+                role: 'admin'
+            }
+        });
 
-    // 2. Check/Create in 'users' table (Auth)
-    let { data: user, error: userError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('email', email)
-        .single();
+        if (authError) {
+            if (authError.message.includes('already been registered')) {
+                console.log('⚠️ Usuário já existe no Auth. Verificando tabela users...');
+            } else {
+                console.log('Auth Error:', authError.message);
+            }
+        } else {
+            console.log('✅ Usuário criado no Supabase Auth!');
+            console.log('   Auth ID:', authData.user.id);
+        }
 
-    if (!user) {
-        console.log("Creating new user record...");
-        const { data: newUser, error: createError } = await supabase
+        // Now check/update the users table
+        const { data: existingUser } = await supabase
             .from('users')
-            .insert({
-                email,
-                password: hashedPassword,
-                name: 'Ghost Gumball',
-                provider: 'email',
-                credits: 9999, // Admin perk
-                plan: 'admin',
-                created_at: new Date().toISOString()
-            })
-            .select()
+            .select('*')
+            .eq('email', email)
             .single();
 
-        if (createError) {
-            console.error("Error creating user:", createError);
-            return;
-        }
-        user = newUser;
-    } else {
-        console.log("User already exists. Updating password/plan...");
-        await supabase
-            .from('users')
-            .update({
-                password: hashedPassword,
-                plan: 'admin',
-                credits: 9999
-            })
-            .eq('id', user.id);
-    }
+        if (existingUser) {
+            console.log('⚠️ Atualizando usuário existente para admin...');
+            const { error } = await supabase
+                .from('users')
+                .update({
+                    role: 'admin',
+                    plan: 'business',
+                    credits: 999999,
+                    name,
+                    username
+                })
+                .eq('email', email);
 
-    // 3. Add to 'admin_users' table (RBAC)
-    // First check if table exists (handled by try/catch or just insert)
-    // admin_users table structure: id (uuid), user_id (uuid references users.id), created_at
-
-    // Check if duplicate
-    const { data: existingAdmin } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-    if (!existingAdmin) {
-        const { error: adminError } = await supabase
-            .from('admin_users')
-            .insert({
-                user_id: user.id
-            });
-
-        if (adminError) {
-            console.error("Error adding to admin_users table:", adminError);
-            console.log("⚠️ Make sure 'admin_users' table exists! Run the SQL schema.");
+            if (error) {
+                console.log('Update Error:', error.message);
+            } else {
+                console.log('✅ Usuário atualizado para admin!');
+            }
         } else {
-            console.log("✅ Admin privileges granted successfully.");
+            // Create user in users table without password (uses Supabase Auth)
+            console.log('📝 Criando entrada na tabela users...');
+            const { data, error } = await supabase
+                .from('users')
+                .insert({
+                    email,
+                    name,
+                    username,
+                    credits: 999999,
+                    plan: 'business',
+                    role: 'admin',
+                    provider: 'email',
+                    created_at: new Date().toISOString()
+                })
+                .select()
+                .single();
+
+            if (error) {
+                console.log('Insert Error:', error.message);
+                console.log('Tentando sem campos opcionais...');
+
+                // Try with minimal fields
+                const { data: minData, error: minError } = await supabase
+                    .from('users')
+                    .insert({
+                        email,
+                        name
+                    })
+                    .select()
+                    .single();
+
+                if (minError) {
+                    console.log('Minimal Insert Error:', minError.message);
+                } else {
+                    console.log('✅ Admin criado com dados mínimos!', minData.id);
+                }
+            } else {
+                console.log('✅ Admin criado com sucesso!');
+                console.log('   ID:', data.id);
+            }
         }
-    } else {
-        console.log("✅ User is already an admin.");
+
+        console.log('\n📋 Credenciais de Acesso:');
+        console.log('   Email:', email);
+        console.log('   Senha:', password);
+
+    } catch (err) {
+        console.error('❌ Erro:', err.message);
     }
 }
 
-createAdmin();
+createAdminUser();
