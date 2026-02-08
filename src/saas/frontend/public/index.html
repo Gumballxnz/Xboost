@@ -4,327 +4,690 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XBoost - Automação Premium Twitter/X</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <title>XBoost - Automação Premium para Twitter/X</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        :root {
+            /* Cores baseadas nos screenshots */
+            --primary: #10b981;
+            /* Verde Botão */
+            --primary-hover: #059669;
+            --accent: #f59e0b;
+            /* Amarelo Raio */
+
+            --bg-page: #0f0f0f;
+            /* Fundo Preto Quase Total */
+            --bg-card: #18181b;
+            /* Zinc 900 */
+            --bg-card-hover: #27272a;
+            /* Zinc 800 */
+
+            --text-main: #ffffff;
+            --text-muted: #a1a1aa;
+            /* Zinc 400 */
+
+            --border: #27272a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            line-height: 1.5;
         }
 
-        .gradient-text {
-            background: linear-gradient(to right, #60a5fa, #c084fc);
+        /* Utils */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .justify-center {
+            justify-content: center;
+        }
+
+        .flex-col {
+            flex-direction: column;
+        }
+
+        .gap-4 {
+            gap: 16px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-4 {
+            margin-top: 16px;
+        }
+
+        .mb-4 {
+            margin-bottom: 16px;
+        }
+
+        /* Header */
+        header {
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            background: rgba(15, 15, 15, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 50;
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        /* Raio Amarelo */
+
+        .nav-btn-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            margin-right: 24px;
+            transition: color 0.2s;
+        }
+
+        .nav-btn-link:hover {
+            color: white;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Hero */
+        .hero {
+            padding-top: 140px;
+            padding-bottom: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .badge-promo {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--primary);
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 24px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            max-width: 800px;
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, var(--primary), #a3e635);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .card {
-            background: rgba(30, 41, 59, 0.5);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.3s ease;
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin-bottom: 40px;
         }
 
-        .card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(96, 165, 250, 0.3);
-            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        /* Stats */
+        .stats-section {
+            padding: 40px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 80px;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            transition: all 0.2s;
+        .stat-item h3 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 4px;
         }
 
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
-            box-shadow: 0 0 15px rgba(37, 99, 235, 0.3);
+        .stat-item p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
         }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
+        /* Features */
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 16px;
         }
 
-        ::-webkit-scrollbar-track {
-            background: #0f172a;
+        .section-subtitle {
+            color: var(--text-muted);
+            margin-bottom: 60px;
         }
 
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 4px;
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 100px;
         }
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: #475569;
+        .feature-card {
+            background: var(--bg-card);
+            padding: 32px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            transition: transform 0.2s;
+            text-align: left;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            background: var(--bg-card-hover);
+        }
+
+        .icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        /* Cores dos ícones baseadas na imagem */
+        .icon-robot {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+
+        .icon-shield {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .icon-globe {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Pricing */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+            max-width: 1000px;
+            margin: 0 auto 100px;
+        }
+
+        .pricing-card {
+            background: var(--bg-card);
+            padding: 40px;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            text-align: center;
+            position: relative;
+        }
+
+        .pricing-card.popular {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.1);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(to right, var(--primary), #059669);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .price {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .currency {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-top: 16px;
+        }
+
+        .features-list {
+            list-style: none;
+            margin-bottom: 32px;
+            text-align: left;
+        }
+
+        .features-list li {
+            margin-bottom: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .features-list li svg {
+            width: 16px;
+            height: 16px;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .btn-full {
+            width: 100%;
+            display: block;
+            padding: 14px;
+        }
+
+        /* Auth Modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            padding: 40px;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .oauth-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 12px;
+            background: #27272a;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .oauth-btn:hover {
+            background: #3f3f46;
         }
     </style>
-    <script>
-        // Security
-        document.addEventListener('contextmenu', event => event.preventDefault());
-        document.addEventListener('keydown', e => {
-            if ((e.ctrlKey || e.metaKey) && ['c', 'u', 's', 'p'].includes(e.key)) e.preventDefault();
-        });
-    </script>
 </head>
 
-<body class="antialiased selection:bg-blue-500 selection:text-white">
+<body>
 
-    <!-- Navbar -->
-    <nav class="fixed w-full z-50 bg-[#0f172a]/90 backdrop-blur-md border-b border-gray-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-2">
-                    <div class="bg-blue-600 p-2 rounded-lg">
-                        <i class="fas fa-rocket text-white"></i>
-                    </div>
-                    <span class="font-bold text-xl tracking-tight">XBoost</span>
-                </div>
-
-                <div class="hidden md:flex items-center gap-8">
-                    <a href="#features"
-                        class="text-sm font-medium text-gray-400 hover:text-white transition">Recursos</a>
-                    <a href="#pricing" class="text-sm font-medium text-gray-400 hover:text-white transition">Preços</a>
-                    <div class="h-4 w-px bg-gray-700"></div>
-                    <button onclick="openLogin('login')"
-                        class="text-sm font-medium text-gray-300 hover:text-white transition">Entrar</button>
-                    <button onclick="openLogin('register')"
-                        class="bg-white text-slate-900 px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-100 transition">Começar
-                        Grátis</button>
-                </div>
-
-                <div class="md:hidden">
-                    <button onclick="document.getElementById('mobile-menu').classList.toggle('hidden')"
-                        class="text-gray-400 hover:text-white p-2">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
-                </div>
+    <header>
+        <div class="container flex justify-between items-center">
+            <a href="#" class="logo"><span>⚡</span> XBoost</a>
+            <div class="flex items-center">
+                <a href="#" onclick="openLogin()" class="nav-btn-link">Entrar</a>
+                <a href="#pricing" class="btn btn-primary">Começar Grátis</a>
             </div>
         </div>
-
-        <!-- Mobile Menu -->
-        <div id="mobile-menu" class="hidden md:hidden bg-[#0f172a] border-b border-gray-800">
-            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                <a href="#features"
-                    class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">Recursos</a>
-                <a href="#pricing"
-                    class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">Preços</a>
-                <button onclick="openLogin('login')"
-                    class="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">Entrar</button>
-                <button onclick="openLogin('register')"
-                    class="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-blue-400 hover:text-blue-300 hover:bg-gray-800">Criar
-                    Conta</button>
-            </div>
-        </div>
-    </nav>
+    </header>
 
     <!-- Hero -->
-    <main class="pt-32 pb-16 px-4">
-        <div class="max-w-4xl mx-auto text-center">
-            <div
-                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-medium border border-blue-500/20 mb-8">
-                <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                v2.0 Disponível Agora
+    <section class="hero text-center">
+        <div class="badge-promo">🔥 5 comentários GRÁTIS para novos usuários</div>
+        <h1>Domine o <span class="text-gradient">Twitter/X</span><br>com Engajamento Real</h1>
+        <p class="hero-subtitle">Aumente sua visibilidade com comentários automáticos e humanizados. Sem robôs
+            detectáveis, sem banimentos.</p>
+        <div class="flex gap-4 justify-center">
+            <a href="#pricing" class="btn btn-primary" style="font-size: 1.1rem; padding: 14px 32px;">Começar Grátis
+                →</a>
+            <a href="#" onclick="openLogin()" class="btn btn-outline" style="font-size: 1.1rem; padding: 14px 32px;">Já
+                tenho conta</a>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="stats-section">
+        <div class="container flex justify-between" style="max-width: 800px;">
+            <div class="stat-item text-center">
+                <h3>12K+</h3>
+                <p>Comentários feitos</p>
+            </div>
+            <div class="stat-item text-center">
+                <h3>99%</h3>
+                <p>Taxa de sucesso</p>
+            </div>
+            <div class="stat-item text-center">
+                <h3>0</h3>
+                <p>Contas banidas</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="container text-center">
+        <h2 class="section-title">Por que escolher XBoost?</h2>
+        <p class="section-subtitle">Tecnologia de ponta para resultados reais</p>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="icon-box icon-robot">🤖</div>
+                <h3>100% Humanizado</h3>
+                <p>Nossos bots simulam comportamento humano real: delays, erros de digitação e padrões naturais.
+                    Impossível distinguir de um usuário real.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon-box icon-shield">🛡️</div>
+                <h3>Anti-Detecção</h3>
+                <p>Stealth mode avançado com fingerprinting único para cada conta. Indetectável pelo algoritmo de
+                    segurança do Twitter.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon-box icon-globe">🌐</div>
+                <h3>Proxies Premium</h3>
+                <p>Cada conta usa um IP exclusivo e fixo (sticky session) para máxima segurança. Rotação 4G global
+                    disponível.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="container text-center">
+        <h2 class="section-title">Preços Simples</h2>
+        <p class="section-subtitle">Pague apenas pelo que usar</p>
+
+        <div class="pricing-grid">
+            <!-- Starter -->
+            <div class="pricing-card">
+                <h3>Starter</h3>
+                <div class="price">500 <span class="currency">MZN</span></div>
+                <ul class="features-list">
+                    <li><svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg> 50 créditos</li>
+                    <li><svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg> Suporte por email</li>
+                    <li><svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg> Dashboard completo</li>
+                </ul>
+                <button onclick="openLogin()" class="btn btn-outline btn-full">Comprar</button>
             </div>
 
-            <h1 class="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-tight">
-                Domine o Engajamento no <span class="gradient-text">Twitter/X</span>
-            </h1>
-
-            <p class="text-lg md:text-xl text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-                Automação inteligente e indetectável para crescer seu perfil. Comentários humanizados, gestão de
-                múltiplas contas e proxies em um só lugar.
-            </p>
-
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <button onclick="openLogin('register')"
-                    class="w-full sm:w-auto px-8 py-4 rounded-xl btn-primary text-white font-semibold text-lg hover:shadow-lg transition flex items-center justify-center gap-2">
-                    Experimentar Grátis <i class="fas fa-arrow-right text-sm"></i>
-                </button>
-                <button onclick="openLogin('login')"
-                    class="w-full sm:w-auto px-8 py-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-medium border border-gray-700 transition">
-                    Acessar Painel
-                </button>
+            <!-- Pro -->
+            <div class="pricing-card popular">
+                <div class="popular-badge">POPULAR</div>
+                <h3>Pro</h3>
+                <div class="price">900 <span class="currency">MZN</span></div>
+                <ul class="features-list">
+                    <li><svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg> 100 créditos</li>
+                    <li><svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg> Suporte prioritário</li>
+                    <li><svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg> Relatórios avançados</li>
+                    <li><svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg> API de integração</li>
+                </ul>
+                <button onclick="openLogin()" class="btn btn-primary btn-full">Comprar</button>
             </div>
 
-            <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-center border-t border-gray-800 pt-8">
-                <div>
-                    <div class="text-3xl font-bold text-white mb-1">10k+</div>
-                    <div class="text-xs text-gray-500 uppercase font-semibold">Usuários</div>
+            <!-- Business -->
+            <div class="pricing-card">
+                <h3>Business</h3>
+                <div class="price">2500 <span class="currency">MZN</span></div>
+                <ul class="features-list">
+                    <li><svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg> 500 créditos</li>
+                    <li><svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg> Suporte 24/7</li>
+                    <li><svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg> Manager dedicado</li>
+                    <li><svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg> White-label</li>
+                </ul>
+                <button onclick="openLogin()" class="btn btn-outline btn-full">Contato</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard View (Hidden by default) -->
+    <main id="dashboard-view" style="display: none; padding-top: 100px; padding-bottom: 50px;">
+        <div class="container">
+            <div class="flex justify-between items-center mb-4">
+                <h2 style="font-size: 2rem;">Meu Dashboard</h2>
+                <div class="user-credits badge-promo">💳 <span id="credit-balance">0</span> Créditos</div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="features-grid" style="margin-bottom: 40px; grid-template-columns: repeat(3, 1fr);">
+                <div class="feature-card" style="padding: 24px;">
+                    <h3 style="font-size: 1rem; color: var(--text-muted);">Campanhas Ativas</h3>
+                    <p style="font-size: 2rem; font-weight: 700; color: white;" id="stat-active">0</p>
                 </div>
-                <div>
-                    <div class="text-3xl font-bold text-blue-400 mb-1">2.5M</div>
-                    <div class="text-xs text-gray-500 uppercase font-semibold">Ações</div>
+                <div class="feature-card" style="padding: 24px;">
+                    <h3 style="font-size: 1rem; color: var(--text-muted);">Comentários Hoje</h3>
+                    <p style="font-size: 2rem; font-weight: 700; color: white;" id="stat-comments">0</p>
                 </div>
-                <div>
-                    <div class="text-3xl font-bold text-purple-400 mb-1">99%</div>
-                    <div class="text-xs text-gray-500 uppercase font-semibold">Retenção</div>
+                <div class="feature-card" style="padding: 24px;">
+                    <h3 style="font-size: 1rem; color: var(--text-muted);">Total Gasto</h3>
+                    <p style="font-size: 2rem; font-weight: 700; color: white;">0 MZN</p>
                 </div>
-                <div>
-                    <div class="text-3xl font-bold text-green-400 mb-1">24/7</div>
-                    <div class="text-xs text-gray-500 uppercase font-semibold">Suporte</div>
+            </div>
+
+            <!-- New Campaign Form -->
+            <div class="pricing-card" style="text-align: left; max-width: 800px; margin: 0 auto;">
+                <h3 style="margin-bottom: 24px; text-align: center;">🚀 Nova Campanha</h3>
+
+                <form onsubmit="submitCampaign(event)">
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: var(--text-muted);">Link do Post
+                            (Twitter/X)</label>
+                        <input type="url" id="camp-url" placeholder="https://x.com/usuario/status/123..." required
+                            style="width: 100%; padding: 12px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: var(--text-muted);">Quantidade de
+                            Comentários</label>
+                        <input type="number" id="camp-count" min="5" max="1000" value="10"
+                            style="width: 100%; padding: 12px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Custo estimado: <span
+                                id="camp-cost" style="color: var(--primary);">0 créditos</span></p>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full">Lançar Campanha</button>
+                    <p id="form-feedback" style="text-align: center; margin-top: 10px; font-size: 0.9rem;"></p>
+                </form>
+            </div>
+
+            <!-- Recent Campaigns List -->
+            <div style="margin-top: 50px;">
+                <h3 style="margin-bottom: 20px;">Últimas Campanhas</h3>
+                <div id="campaign-list" style="background: var(--bg-card); border-radius: 16px; overflow: hidden;">
+                    <!-- Items rendered via JS -->
+                    <div style="padding: 20px; text-align: center; color: var(--text-muted);">Nenhuma campanha
+                        encontrada.</div>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Pricing -->
-    <section id="pricing" class="py-24 bg-slate-900/50">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl font-bold mb-4">Planos Flexíveis</h2>
-                <p class="text-gray-400">Escolha o poder de fogo ideal para sua estratégia.</p>
-            </div>
+    <!-- Modal Login -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="mb-4">Entrar no XBoost</h2>
+            <p class="text-muted mb-4">Escolha como deseja continuar</p>
 
-            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                <!-- Starter -->
-                <div class="card p-8 rounded-2xl">
-                    <h3 class="text-xl font-bold mb-2">Starter</h3>
-                    <div class="text-3xl font-bold mb-6">500 MZN</div>
-                    <ul class="space-y-4 mb-8 text-gray-400 text-sm">
-                        <li class="flex items-center gap-3"><i class="fas fa-check text-blue-500"></i> 50 Créditos</li>
-                        <li class="flex items-center gap-3"><i class="fas fa-check text-blue-500"></i> Suporte Básico
-                        </li>
-                        <li class="flex items-center gap-3"><i class="fas fa-check text-blue-500"></i> Acesso Web</li>
-                    </ul>
-                    <button onclick="openLogin('register')"
-                        class="w-full py-3 rounded-xl border border-gray-600 hover:bg-gray-800 transition font-medium">Começar</button>
-                </div>
+            <a href="http://16.170.133.174/api/auth/github" class="oauth-btn" style="background: #333;">
+                <svg fill="currentColor" width="20" height="20" viewBox="0 0 24 24">
+                    <path
+                        d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                </svg>
+                Continuar com GitHub
+            </a>
 
-                <!-- Pro -->
-                <div class="card p-8 rounded-2xl border-blue-500/30 relative bg-slate-800/80">
-                    <div
-                        class="absolute top-0 right-0 bg-blue-600 text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">
-                        POPULAR</div>
-                    <h3 class="text-xl font-bold mb-2 text-white">Pro</h3>
-                    <div class="text-3xl font-bold mb-6 text-blue-400">900 MZN</div>
-                    <ul class="space-y-4 mb-8 text-gray-300 text-sm">
-                        <li class="flex items-center gap-3"><i class="fas fa-check text-blue-400"></i> 100 Créditos</li>
-                        <li class="flex items-center gap-3"><i class="fas fa-check text-blue-400"></i> Suporte
-                            Prioritário</li>
-                        <li class="flex items-center gap-3"><i class="fas fa-check text-blue-400"></i> Anti-ban v2</li>
-                    </ul>
-                    <button onclick="openLogin('register')"
-                        class="w-full py-3 rounded-xl btn-primary text-white font-bold shadow-lg">Escolher Pro</button>
-                </div>
+            <a href="http://16.170.133.174/api/auth/google" class="oauth-btn"
+                style="background: white; color: black; border-color: white;">
+                <svg width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="#EA4335"
+                        d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.087 0 12 0 7.31 0 3.255 2.69 1.291 6.617l3.975 3.148Z" />
+                    <path fill="#34A853"
+                        d="M16.04 18.013c-1.09.703-2.474 1.078-4.04 1.078a7.077 7.077 0 0 1-6.723-4.823l-3.998 3.066C3.299 21.352 7.32 24 12 24c3.24 0 5.957-1.156 7.961-3.006l-3.922-2.981Z" />
+                    <path fill="#4A90E2"
+                        d="M19.834 10.09c.082.661.126 1.35.126 2.05s-.043 1.389-.126 2.05l3.923 2.981c.71-1.575 1.104-3.327 1.104-5.171s-.394-3.596-1.104-5.17l-3.923 3.26Z" />
+                    <path fill="#FBBC05"
+                        d="M5.266 14.235c-.175-.845-.266-1.72-.266-2.615s.091-1.77.266-2.615l-3.975-3.148C.486 7.643 0 9.773 0 12c0 2.227.486 4.357 1.291 6.143l3.975-3.908Z" />
+                </svg>
+                Continuar com Google
+            </a>
 
-                <!-- Business -->
-                <div class="card p-8 rounded-2xl">
-                    <h3 class="text-xl font-bold mb-2">Business</h3>
-                    <div class="text-3xl font-bold mb-6">2500 MZN</div>
-                    <ul class="space-y-4 mb-8 text-gray-400 text-sm">
-                        <li class="flex items-center gap-3"><i class="fas fa-check text-purple-500"></i> 500 Créditos
-                        </li>
-                        <li class="flex items-center gap-3"><i class="fas fa-check text-purple-500"></i> Gerente
-                            Dedicado</li>
-                        <li class="flex items-center gap-3"><i class="fas fa-check text-purple-500"></i> API Access</li>
-                    </ul>
-                    <button onclick="openLogin('register')"
-                        class="w-full py-3 rounded-xl border border-gray-600 hover:bg-gray-800 transition font-medium">Contatar</button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Auth Modal -->
-    <div id="auth-modal"
-        class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
-        <div class="bg-[#1e293b] border border-gray-700 p-8 rounded-2xl w-full max-w-md relative shadow-2xl">
-            <button onclick="closeLogin()" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i
-                    class="fas fa-times"></i></button>
-
-            <div class="text-center mb-8">
-                <i class="fas fa-rocket text-4xl text-blue-500 mb-4"></i>
-                <h2 id="modal-title" class="text-2xl font-bold">Bem-vindo</h2>
-                <p class="text-gray-400 text-sm mt-2">Acesse sua conta para continuar.</p>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 mb-6">
-                <!-- Links corrigidos -->
-                <a href="/api/auth/github"
-                    class="flex items-center justify-center gap-2 py-2.5 bg-[#0f172a] hover:bg-black border border-gray-700 rounded-lg transition text-sm font-medium">
-                    <i class="fab fa-github"></i> GitHub
-                </a>
-                <a href="/api/auth/google"
-                    class="flex items-center justify-center gap-2 py-2.5 bg-white hover:bg-gray-100 text-slate-900 rounded-lg transition text-sm font-medium border border-white">
-                    <i class="fab fa-google text-red-500"></i> Google
-                </a>
-            </div>
-
-            <div class="relative py-2 mb-6">
-                <div class="absolute inset-0 flex items-center">
-                    <div class="w-full border-t border-gray-700"></div>
-                </div>
-                <div class="relative flex justify-center text-sm"><span class="px-2 bg-[#1e293b] text-gray-500">ou
-                        email</span></div>
-            </div>
-
-            <form onsubmit="handleAuth(event)" class="space-y-4">
-                <input type="email" id="email" placeholder="Email"
-                    class="w-full p-3 bg-[#0f172a] border border-gray-700 rounded-lg focus:border-blue-500 outline-none transition text-white">
-                <input type="password" id="password" placeholder="Senha"
-                    class="w-full p-3 bg-[#0f172a] border border-gray-700 rounded-lg focus:border-blue-500 outline-none transition text-white">
-                <button type="submit"
-                    class="w-full py-3 btn-primary rounded-lg font-bold text-white shadow-lg">Entrar</button>
-            </form>
-
-            <p class="text-center mt-6 text-gray-500 text-sm">
-                Protegido por reCAPTCHA e sujeito à Política de Privacidade.
-            </p>
+            <button onclick="closeLogin()" class="btn btn-outline"
+                style="width: 100%; margin-top: 16px;">Cancelar</button>
         </div>
     </div>
 
     <script>
-        function openLogin(mode) {
-            document.getElementById('auth-modal').classList.remove('hidden');
-            document.getElementById('auth-modal').classList.add('flex');
-            document.getElementById('modal-title').innerText = mode === 'register' ? 'Criar Conta' : 'Fazer Login';
-        }
-
-        function closeLogin() {
-            document.getElementById('auth-modal').classList.add('hidden');
-            document.getElementById('auth-modal').classList.remove('flex');
-        }
-
-        async function handleAuth(e) {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const isRegister = document.getElementById('modal-title').innerText === 'Criar Conta';
-
-            const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
-
-            try {
-                const res = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                const data = await res.json();
-
-                if (data.token) {
-                    localStorage.setItem('token', data.token);
-                    window.location.href = '/admin'; // Redirect
-                } else {
-                    alert(data.error || 'Erro na autenticação');
-                }
-            } catch (err) {
-                alert('Erro de conexão');
-            }
-        }
-
-        // OAuth Handler
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('token')) {
-            localStorage.setItem('token', params.get('token'));
-            window.location.href = '/admin';
-        }
+        function openLogin() { document.getElementById('login-modal').classList.add('active'); }
+        function closeLogin() { document.getElementById('login-modal').classList.remove('active'); }
     </script>
+    <script src="app.js"></script>
 </body>
 
 </html>
