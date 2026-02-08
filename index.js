@@ -1,4 +1,5 @@
 // XBoost Entry Point (Vercel Support)
+import express from 'express';
 import app from './src/saas/frontend/server.js';
 
 // Vercel Serverless requires default export
