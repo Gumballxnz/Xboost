@@ -16,17 +16,13 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 
-// Admin Routes - Dynamic to avoid crashes if files are missing
-let proxiesRouter = null, accountsRouter = null, usersRouter = null, statsRouter = null;
-try {
-    proxiesRouter = (await import('./admin/routes/proxies.js')).default;
-    accountsRouter = (await import('./admin/routes/accounts.js')).default;
-    usersRouter = (await import('./admin/routes/users.js')).default;
-    statsRouter = (await import('./admin/routes/stats.js')).default;
-    console.log('✅ Admin routes loaded');
-} catch (e) {
-    console.warn('⚠️ Admin routes not loaded:', e.message);
-}
+// Admin Routes - Static Imports to ensure Vercel bundles them
+import proxiesRouter from './admin/routes/proxies.js';
+import accountsRouter from './admin/routes/accounts.js';
+import usersRouter from './admin/routes/users.js';
+import statsRouter from './admin/routes/stats.js';
+
+console.log('✅ Admin routes loaded');
 
 // ================== Supabase Config ==================
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
