@@ -1,9 +1,15 @@
 import express from 'express';
 import { createClient } from '@supabase/supabase-js';
-import { verifyAdmin } from '../middleware/auth.js';
+import { verifyAdmin } from '../admin/middleware/auth.js';
 
 const router = express.Router();
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+// FAIL-SAFE: Create client only if keys exist
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
+
+const supabase = (supabaseUrl && supabaseKey)
+    ? createClient(supabaseUrl, supabaseKey)
+    : { from: () => ({ select: () => ({ eq: () => ({ single: () => ({ error: { message: 'Supabase Keys Missing' } }) }) }) }) };
 
 router.get('/', verifyAdmin, async (req, res) => {
     try {
