@@ -1,25 +1,39 @@
 // =====================================================
-// XBOOST SAAS - API Server with OAuth
+// XBOOST SAAS - API Server with OAuth & Supabase
 // =====================================================
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import fs from 'fs';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import passport from 'passport';
 import { Strategy as GitHubStrategy } from 'passport-github2';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import session from 'express-session';
+import { createClient } from '@supabase/supabase-js';
 
-// Queue (BullMQ) - Import conditionally to allow running without Redis
+// Admin Routes imports
+import proxiesRouter from './admin/routes/proxies.js';
+import accountsRouter from './admin/routes/accounts.js';
+import usersRouter from './admin/routes/users.js';
+import statsRouter from './admin/routes/stats.js';
+
+// ================== Supabase Config ==================
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+    console.error('❌ Supabase URL/Key missing. Check environment variables.');
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Queue (BullMQ) - Import conditionally
 let addCampaignJob = null;
-let getQueueStats = null;
 try {
     const queue = await import('./queue.js');
     addCampaignJob = queue.addCampaignJob;
-    getQueueStats = queue.getQueueStats;
     console.log('✅ Redis queue connected');
 } catch (e) {
     console.log('⚠️ Redis not available, using simulation mode');
@@ -30,20 +44,19 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3003;
-const JWT_SECRET = 'xboost-secret-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET || 'xboost-secret-change-in-production';
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
 // ================== OAuth Config ==================
-// Para produção, configure estas variáveis de ambiente:
 const OAUTH_CONFIG = {
     github: {
-        clientID: process.env.GITHUB_CLIENT_ID || 'GITHUB_CLIENT_ID',
-        clientSecret: process.env.GITHUB_CLIENT_SECRET || 'GITHUB_CLIENT_SECRET',
+        clientID: process.env.GITHUB_CLIENT_ID,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET,
         callbackURL: `${BASE_URL}/api/auth/github/callback`
     },
     google: {
-        clientID: process.env.GOOGLE_CLIENT_ID || 'GOOGLE_CLIENT_ID',
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'GOOGLE_CLIENT_SECRET',
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         callbackURL: `${BASE_URL}/api/auth/google/callback`
     }
 };
@@ -56,33 +69,27 @@ app.use(session({
     secret: JWT_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
+    cookie: { secure: process.env.NODE_ENV === 'production', maxAge: 24 * 60 * 60 * 1000 }
 }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Database simulado (JSON files)
-const DB_PATH = path.join(__dirname, 'data');
-if (!fs.existsSync(DB_PATH)) fs.mkdirSync(DB_PATH);
-
-const usersFile = path.join(DB_PATH, 'users.json');
-const campaignsFile = path.join(DB_PATH, 'campaigns.json');
-
-function loadDB(file) {
-    if (!fs.existsSync(file)) return [];
-    return JSON.parse(fs.readFileSync(file, 'utf-8'));
-}
-
-function saveDB(file, data) {
-    fs.writeFileSync(file, JSON.stringify(data, null, 2));
-}
-
 // ================== Passport Serialization ==================
 passport.serializeUser((user, done) => done(null, user.id));
-passport.deserializeUser((id, done) => {
-    const users = loadDB(usersFile);
-    const user = users.find(u => u.id === id);
-    done(null, user);
+
+passport.deserializeUser(async (id, done) => {
+    try {
+        const { data: user, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (error) return done(error, null);
+        done(null, user);
+    } catch (err) {
+        done(err, null);
+    }
 });
 
 // ================== GitHub Strategy ==================
@@ -90,13 +97,16 @@ passport.use(new GitHubStrategy(
     OAUTH_CONFIG.github,
     async (accessToken, refreshToken, profile, done) => {
         try {
-            const users = loadDB(usersFile);
-            let user = users.find(u => u.githubId === profile.id);
+            // Check if user exists
+            let { data: user } = await supabase
+                .from('users')
+                .select('*')
+                .eq('githubId', profile.id)
+                .single();
 
             if (!user) {
-                // Criar novo usuário
-                user = {
-                    id: Date.now().toString(),
+                // Create new user
+                const newUser = {
                     email: profile.emails?.[0]?.value || `${profile.username}@github.local`,
                     name: profile.displayName || profile.username,
                     avatar: profile.photos?.[0]?.value,
@@ -104,14 +114,22 @@ passport.use(new GitHubStrategy(
                     provider: 'github',
                     credits: 5,
                     plan: 'free',
-                    createdAt: new Date().toISOString()
+                    created_at: new Date().toISOString()
                 };
-                users.push(user);
-                saveDB(usersFile, users);
+
+                const { data, error } = await supabase
+                    .from('users')
+                    .insert(newUser)
+                    .select()
+                    .single();
+
+                if (error) throw error;
+                user = data;
                 console.log(`🆕 Novo usuário via GitHub: ${user.name}`);
             }
             return done(null, user);
         } catch (err) {
+            console.error('GitHub Auth Error:', err);
             return done(err, null);
         }
     }
@@ -122,13 +140,14 @@ passport.use(new GoogleStrategy(
     OAUTH_CONFIG.google,
     async (accessToken, refreshToken, profile, done) => {
         try {
-            const users = loadDB(usersFile);
-            let user = users.find(u => u.googleId === profile.id);
+            let { data: user } = await supabase
+                .from('users')
+                .select('*')
+                .eq('googleId', profile.id)
+                .single();
 
             if (!user) {
-                // Criar novo usuário
-                user = {
-                    id: Date.now().toString(),
+                const newUser = {
                     email: profile.emails?.[0]?.value || `${profile.id}@google.local`,
                     name: profile.displayName,
                     avatar: profile.photos?.[0]?.value,
@@ -136,14 +155,22 @@ passport.use(new GoogleStrategy(
                     provider: 'google',
                     credits: 5,
                     plan: 'free',
-                    createdAt: new Date().toISOString()
+                    created_at: new Date().toISOString()
                 };
-                users.push(user);
-                saveDB(usersFile, users);
+
+                const { data, error } = await supabase
+                    .from('users')
+                    .insert(newUser)
+                    .select()
+                    .single();
+
+                if (error) throw error;
+                user = data;
                 console.log(`🆕 Novo usuário via Google: ${user.name}`);
             }
             return done(null, user);
         } catch (err) {
+            console.error('Google Auth Error:', err);
             return done(err, null);
         }
     }
@@ -173,113 +200,142 @@ app.post('/api/auth/register', async (req, res) => {
         return res.status(400).json({ error: 'Email e senha obrigatórios' });
     }
 
-    const users = loadDB(usersFile);
+    try {
+        // Check existing
+        const { data: existing } = await supabase
+            .from('users')
+            .select('id')
+            .eq('email', email)
+            .single();
 
-    if (users.find(u => u.email === email)) {
-        return res.status(400).json({ error: 'Email já cadastrado' });
+        if (existing) {
+            return res.status(400).json({ error: 'Email já cadastrado' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newUser = {
+            email,
+            password: hashedPassword,
+            name: name || email.split('@')[0],
+            credits: 5,
+            plan: 'free',
+            provider: 'email',
+            created_at: new Date().toISOString()
+        };
+
+        const { data: user, error } = await supabase
+            .from('users')
+            .insert(newUser)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+
+        res.json({
+            message: 'Conta criada! Você ganhou 5 créditos grátis 🎉',
+            token,
+            user: { id: user.id, email: user.email, name: user.name, credits: user.credits }
+        });
+    } catch (err) {
+        console.error('Register Error:', err);
+        res.status(500).json({ error: 'Erro ao criar conta' });
     }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = {
-        id: Date.now().toString(),
-        email,
-        password: hashedPassword,
-        name: name || email.split('@')[0],
-        credits: 5, // 5 créditos grátis!
-        plan: 'free',
-        createdAt: new Date().toISOString()
-    };
-
-    users.push(newUser);
-    saveDB(usersFile, users);
-
-    const token = jwt.sign({ id: newUser.id, email: newUser.email }, JWT_SECRET, { expiresIn: '7d' });
-
-    res.json({
-        message: 'Conta criada! Você ganhou 5 créditos grátis 🎉',
-        token,
-        user: { id: newUser.id, email: newUser.email, name: newUser.name, credits: newUser.credits }
-    });
 });
 
 // Login
 app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
 
-    const users = loadDB(usersFile);
-    const user = users.find(u => u.email === email);
+    try {
+        const { data: user, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('email', email)
+            .single();
 
-    if (!user) {
-        return res.status(401).json({ error: 'Credenciais inválidas' });
+        if (error || !user) {
+            return res.status(401).json({ error: 'Credenciais inválidas' });
+        }
+
+        const valid = await bcrypt.compare(password, user.password);
+        if (!valid) {
+            return res.status(401).json({ error: 'Credenciais inválidas' });
+        }
+
+        const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+
+        res.json({
+            token,
+            user: { id: user.id, email: user.email, name: user.name, credits: user.credits }
+        });
+    } catch (err) {
+        console.error('Login Error:', err);
+        res.status(500).json({ error: 'Erro ao fazer login' });
     }
-
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) {
-        return res.status(401).json({ error: 'Credenciais inválidas' });
-    }
-
-    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
-
-    res.json({
-        token,
-        user: { id: user.id, email: user.email, name: user.name, credits: user.credits }
-    });
 });
 
-// Me (dados do usuário logado)
-app.get('/api/auth/me', authMiddleware, (req, res) => {
-    const users = loadDB(usersFile);
-    const user = users.find(u => u.id === req.user.id);
+// Me
+app.get('/api/auth/me', authMiddleware, async (req, res) => {
+    try {
+        const { data: user, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', req.user.id)
+            .single();
 
-    if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
+        if (error || !user) return res.status(404).json({ error: 'Usuário não encontrado' });
 
-    res.json({
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        credits: user.credits,
-        plan: user.plan,
-        avatar: user.avatar,
-        provider: user.provider
-    });
+        res.json({
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            credits: user.credits,
+            plan: user.plan,
+            avatar: user.avatar,
+            provider: user.provider
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Erro interno' });
+    }
 });
 
 // ================== OAuth Routes ==================
-
-// GitHub OAuth
 app.get('/api/auth/github', passport.authenticate('github', { scope: ['user:email'] }));
 
 app.get('/api/auth/github/callback',
     passport.authenticate('github', { failureRedirect: '/?error=github_failed' }),
     (req, res) => {
-        // Gerar JWT e redirecionar
         const token = jwt.sign(
             { id: req.user.id, email: req.user.email },
             JWT_SECRET,
             { expiresIn: '7d' }
         );
-        // Redirecionar com token na URL (frontend vai capturar)
         res.redirect(`/?token=${token}&provider=github`);
     }
 );
 
-// Google OAuth
 app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 app.get('/api/auth/google/callback',
     passport.authenticate('google', { failureRedirect: '/?error=google_failed' }),
     (req, res) => {
-        // Gerar JWT e redirecionar
         const token = jwt.sign(
             { id: req.user.id, email: req.user.email },
             JWT_SECRET,
             { expiresIn: '7d' }
         );
-        // Redirecionar com token na URL (frontend vai capturar)
         res.redirect(`/?token=${token}&provider=google`);
     }
 );
+
+// ================== ADMIN ROUTES (Protected) ==================
+app.use('/api/admin/proxies', proxiesRouter);
+app.use('/api/admin/accounts', accountsRouter);
+app.use('/api/admin/users', usersRouter);
+app.use('/api/admin/stats', statsRouter);
 
 // ================== CAMPAIGN ROUTES ==================
 
@@ -291,136 +347,130 @@ app.post('/api/campaigns', authMiddleware, async (req, res) => {
         return res.status(400).json({ error: 'URL do post e quantidade são obrigatórios' });
     }
 
-    // Verificar se é URL válida do Twitter/X
     if (!postUrl.includes('twitter.com') && !postUrl.includes('x.com')) {
         return res.status(400).json({ error: 'URL inválida. Use um link do Twitter/X' });
     }
 
-    // Verificar créditos
-    const users = loadDB(usersFile);
-    const userIdx = users.findIndex(u => u.id === req.user.id);
+    try {
+        // Verificar créditos
+        const { data: user } = await supabase
+            .from('users')
+            .select('credits')
+            .eq('id', req.user.id)
+            .single();
 
-    if (userIdx === -1) {
-        return res.status(404).json({ error: 'Usuário não encontrado' });
-    }
+        if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
 
-    if (users[userIdx].credits < commentsCount) {
-        return res.status(402).json({
-            error: `Créditos insuficientes. Você tem ${users[userIdx].credits}, precisa de ${commentsCount}.`
+        if (user.credits < commentsCount) {
+            return res.status(402).json({
+                error: `Créditos insuficientes. Você tem ${user.credits}, precisa de ${commentsCount}.`
+            });
+        }
+
+        // Criar campanha
+        const newCampaign = {
+            userId: req.user.id,
+            postUrl,
+            totalComments: commentsCount,
+            completedComments: 0,
+            status: 'pending',
+            created_at: new Date().toISOString()
+        };
+
+        const { data: campaign, error } = await supabase
+            .from('campaigns')
+            .insert(newCampaign)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        // Debitar créditos (Atomic transaction ideally, separate here for simplicity)
+        await supabase
+            .from('users')
+            .update({ credits: user.credits - commentsCount })
+            .eq('id', req.user.id);
+
+        console.log(`📋 Nova campanha: ${campaign.id} - ${commentsCount} comentários em ${postUrl}`);
+
+        if (addCampaignJob) {
+            await addCampaignJob(campaign);
+            await supabase.from('campaigns').update({ status: 'queued' }).eq('id', campaign.id);
+        } else {
+            // Fallback: simulate
+            processCampaign(campaign.id);
+        }
+
+        res.json({
+            message: 'Campanha criada com sucesso!',
+            campaign,
+            creditsRemaining: user.credits - commentsCount
         });
+    } catch (err) {
+        console.error('Campaign Error:', err);
+        res.status(500).json({ error: 'Erro ao criar campanha' });
     }
-
-    // Debitar créditos
-    users[userIdx].credits -= commentsCount;
-    saveDB(usersFile, users);
-
-    // Criar campanha
-    const campaigns = loadDB(campaignsFile);
-    const campaign = {
-        id: Date.now().toString(),
-        userId: req.user.id,
-        postUrl,
-        totalComments: commentsCount,
-        completedComments: 0,
-        status: 'pending', // pending, running, completed, failed
-        createdAt: new Date().toISOString()
-    };
-
-    campaigns.push(campaign);
-    saveDB(campaignsFile, campaigns);
-
-    // Add to queue (real processing) or simulate
-    console.log(`📋 Nova campanha: ${campaign.id} - ${commentsCount} comentários em ${postUrl}`);
-
-    if (addCampaignJob) {
-        // Real queue processing
-        await addCampaignJob(campaign);
-        campaign.status = 'queued';
-    } else {
-        // Fallback: simulate processing
-        processCampaign(campaign.id);
-    }
-
-    res.json({
-        message: 'Campanha criada com sucesso!',
-        campaign,
-        creditsRemaining: users[userIdx].credits
-    });
 });
 
-// Listar campanhas do usuário
-app.get('/api/campaigns', authMiddleware, (req, res) => {
-    const campaigns = loadDB(campaignsFile);
-    const userCampaigns = campaigns
-        .filter(c => c.userId === req.user.id)
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+// Listar campanhas
+app.get('/api/campaigns', authMiddleware, async (req, res) => {
+    try {
+        const { data: campaigns, error } = await supabase
+            .from('campaigns')
+            .select('*')
+            .eq('userId', req.user.id)
+            .order('created_at', { ascending: false });
 
-    res.json(userCampaigns);
+        if (error) throw error;
+
+        res.json(campaigns);
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao listar campanhas' });
+    }
 });
 
-// Detalhes de uma campanha
-app.get('/api/campaigns/:id', authMiddleware, (req, res) => {
-    const campaigns = loadDB(campaignsFile);
-    const campaign = campaigns.find(c => c.id === req.params.id && c.userId === req.user.id);
+// Detalhes
+app.get('/api/campaigns/:id', authMiddleware, async (req, res) => {
+    try {
+        const { data: campaign, error } = await supabase
+            .from('campaigns')
+            .select('*')
+            .eq('id', req.params.id)
+            .eq('userId', req.user.id)
+            .single();
 
-    if (!campaign) {
-        return res.status(404).json({ error: 'Campanha não encontrada' });
+        if (error || !campaign) return res.status(404).json({ error: 'Campanha não encontrada' });
+
+        res.json(campaign);
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao buscar campanha' });
     }
-
-    res.json(campaign);
 });
 
 // ================== SIMULAÇÃO DO BOT ==================
 async function processCampaign(campaignId) {
-    const campaigns = loadDB(campaignsFile);
-    const idx = campaigns.findIndex(c => c.id === campaignId);
+    // Atualizar status para running
+    await supabase.from('campaigns').update({ status: 'running' }).eq('id', campaignId);
 
-    if (idx === -1) return;
+    // Buscar dados atuais
+    const { data: campaign } = await supabase.from('campaigns').select('*').eq('id', campaignId).single();
+    if (!campaign) return;
 
-    campaigns[idx].status = 'running';
-    saveDB(campaignsFile, campaigns);
-
-    // Simular processamento gradual
-    const total = campaigns[idx].totalComments;
+    const total = campaign.totalComments;
 
     for (let i = 0; i < total; i++) {
-        await new Promise(r => setTimeout(r, 3000)); // 3s por comentário (simulado)
+        await new Promise(r => setTimeout(r, 3000)); // 3s delay
 
-        const updated = loadDB(campaignsFile);
-        const current = updated.findIndex(c => c.id === campaignId);
-        if (current !== -1) {
-            updated[current].completedComments = i + 1;
-            if (i + 1 === total) {
-                updated[current].status = 'completed';
-            }
-            saveDB(campaignsFile, updated);
-        }
+        // Atualizar progresso
+        await supabase.from('campaigns').update({
+            completedComments: i + 1,
+            status: (i + 1 === total) ? 'completed' : 'running'
+        }).eq('id', campaignId);
     }
 
-    console.log(`✅ Campanha ${campaignId} concluída!`);
+    console.log(`✅ Campanha ${campaignId} concluída (Simulada)!`);
 }
 
-// ================== ADMIN ROUTES ==================
-app.get('/api/admin/stats', (req, res) => {
-    const users = loadDB(usersFile);
-    const campaigns = loadDB(campaignsFile);
-
-    res.json({
-        totalUsers: users.length,
-        totalCampaigns: campaigns.length,
-        activeCampaigns: campaigns.filter(c => c.status === 'running').length,
-        completedCampaigns: campaigns.filter(c => c.status === 'completed').length,
-        totalComments: campaigns.reduce((sum, c) => sum + c.completedComments, 0)
-    });
-});
-
-// ================== START SERVER ==================
 app.listen(PORT, () => {
-    console.log('');
-    console.log('🚀 ════════════════════════════════════════');
-    console.log('   XBOOST SaaS - Twitter Bot Platform');
-    console.log('════════════════════════════════════════════');
-    console.log(`   🌐 http://localhost:${PORT}`);
-    console.log('════════════════════════════════════════════');
-    console.log('');
+    console.log(`🚀 Server running on port ${PORT}`);
 });

@@ -5,11 +5,15 @@
     "description": "Bot para automação de posts e interações no X (Twitter)",
     "main": "index.js",
     "scripts": {
-        "start": "node index.js"
+        "start": "node index.js",
+        "sync": "node scripts/sync_aws.js"
     },
     "dependencies": {
+        "@supabase/supabase-js": "^2.95.3",
         "axios": "^1.13.3",
+        "bcryptjs": "^3.0.3",
         "colors": "^1.4.0",
+        "dotenv": "^17.2.4",
         "fs-extra": "^11.2.0",
         "imap-simple": "^5.1.0",
         "mailparser": "^3.9.1",
