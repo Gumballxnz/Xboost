@@ -36,7 +36,21 @@ if (!supabaseUrl || !supabaseKey) {
     console.error('❌ Supabase URL/Key missing. Check environment variables.');
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+// FAIL-SAFE: Create client only if keys exist, otherwise mock to prevent crash on boot
+const supabase = (supabaseUrl && supabaseKey)
+    ? createClient(supabaseUrl, supabaseKey)
+    : {
+        from: () => ({
+            select: () => ({
+                eq: () => ({
+                    single: () => ({ error: { message: 'SETUP REQUIRED: Add Supabase Keys to Vercel Environment Variables.' } }),
+                    order: () => ({ error: { message: 'SETUP REQUIRED: Add Supabase Keys to Vercel Environment Variables.' } })
+                }),
+                insert: () => ({ select: () => ({ single: () => ({ error: { message: 'SETUP REQUIRED: Add Supabase Keys to Vercel Environment Variables.' } }) }) }),
+                update: () => ({ eq: () => ({ select: () => ({ single: () => ({ error: { message: 'SETUP REQUIRED: Add Supabase Keys to Vercel Environment Variables.' } }) }) }) }),
+            })
+        })
+    };
 
 // Queue (BullMQ) - Import conditionally and ONLY if NOT Vercel
 let addCampaignJob = null;
