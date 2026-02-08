@@ -38,14 +38,21 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Queue (BullMQ) - Import conditionally
+// Queue (BullMQ) - Import conditionally and ONLY if NOT Vercel
 let addCampaignJob = null;
-try {
-    const queue = await import('./queue.js');
-    addCampaignJob = queue.addCampaignJob;
-    console.log('✅ Redis queue connected');
-} catch (e) {
-    console.log('⚠️ Redis not available, using simulation mode');
+
+// Vercel Serverless optimization: Don't load BullMQ if running in lambda
+// or if missing Redis env.
+if (!process.env.VERCEL) {
+    try {
+        const queue = await import('./queue.js');
+        addCampaignJob = queue.addCampaignJob;
+        console.log('✅ Redis queue connected');
+    } catch (e) {
+        console.log('⚠️ Redis/Queue skipped (Serverless/Error):', e.message);
+    }
+} else {
+    console.log('⚡ Vercel Environment: Skipping Redis connection to prevent timeout/bloat.');
 }
 
 const __filename = fileURLToPath(import.meta.url);

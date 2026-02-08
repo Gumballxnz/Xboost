@@ -1,5 +1,5 @@
 // =====================================================
-// MANAGER.JS - ORQUESTRADOR v2.0 (3-Layer Architecture)
+// MANAGER.JS - ORQUESTRADOR v2.1 (Headless Support)
 // =====================================================
 
 import fs from 'fs-extra';
@@ -27,11 +27,16 @@ function log(message, level = 'INFO') {
     const timestamp = new Date().toISOString();
     const logLine = `[${timestamp}] [${level}] ${message}`;
 
-    switch (level) {
-        case 'ERROR': console.log(logLine.red); break;
-        case 'SUCCESS': console.log(logLine.green); break;
-        case 'WARN': console.log(logLine.yellow); break;
-        default: console.log(logLine);
+    // Em modo headless, só loga ERROR ou se for verbose
+    const isHeadless = process.argv.includes('--headless');
+
+    if (!isHeadless || level === 'ERROR') {
+        switch (level) {
+            case 'ERROR': console.log(logLine.red); break;
+            case 'SUCCESS': console.log(logLine.green); break;
+            case 'WARN': console.log(logLine.yellow); break;
+            default: console.log(logLine);
+        }
     }
 
     fs.ensureDirSync(path.dirname(CONFIG.LOG_FILE));
@@ -138,7 +143,11 @@ async function processTaskQueue() {
                     break;
                 case 'COMMENT':
                     if (!task.target) throw new Error('URL do post não especificada');
-                    await runScript('execution/rotator.js', [task.target]);
+                    // Passando contagem se existir
+                    const args = [task.target];
+                    if (task.count) args.push(task.count);
+
+                    await runScript('execution/rotator.js', args);
                     break;
                 case 'VALIDATE_PROXIES':
                     await runScript('execution/verifica_proxy.js');
@@ -187,6 +196,43 @@ function clear() {
     process.stdout.write('\x1Bc');
 }
 
+// --- HEADLESS MODE HANDLER ---
+async function handleHeadless() {
+    const args = process.argv.slice(2);
+    // Ex: node orchestrator.js --headless --command ADD_TASK --type COMMENT --target "http..."
+
+    const commandIndex = args.indexOf('--command');
+    const command = commandIndex !== -1 ? args[commandIndex + 1] : null;
+
+    log(`Iniciando Modo Headless: ${command}`, 'WARN');
+
+    if (command === 'PROCESS_QUEUE') {
+        await processTaskQueue();
+    } else if (command === 'ADD_TASK') {
+        const typeIndex = args.indexOf('--type');
+        const targetIndex = args.indexOf('--target');
+        const countIndex = args.indexOf('--count');
+
+        const type = typeIndex !== -1 ? args[typeIndex + 1] : null;
+        const target = targetIndex !== -1 ? args[targetIndex + 1] : null;
+        const count = countIndex !== -1 ? args[countIndex + 1] : null;
+
+        if (type) {
+            addTask({ type, target, count });
+            // Se flag --execute estiver presente, roda a fila imediatamente
+            if (args.includes('--execute')) {
+                await processTaskQueue();
+            }
+        } else {
+            console.error('Tipo de tarefa obrigatório (--type)');
+            process.exit(1);
+        }
+    } else {
+        console.error('Comando desconhecido ou ausente (--command)');
+        process.exit(1);
+    }
+}
+
 // --- MENU PRINCIPAL ---
 async function mainMenu() {
     clear();
@@ -197,7 +243,7 @@ async function mainMenu() {
     const pendingTasks = queue.filter(t => t.status === 'PENDING').length;
 
     console.log('╔════════════════════════════════════════════════════╗'.cyan);
-    console.log('║     🐦 TWITTER BOT ORCHESTRATOR v2.0               ║'.cyan.bold);
+    console.log('║     🐦 TWITTER BOT ORCHESTRATOR v2.1               ║'.cyan.bold);
     console.log('╠════════════════════════════════════════════════════╣'.cyan);
     console.log(`║  📊 Contas: ${activeAccounts}/${accounts.length} ativas | Proxies: ${proxies.length} | Fila: ${pendingTasks}`.padEnd(54) + '║'.cyan);
     console.log('╠════════════════════════════════════════════════════╣'.cyan);
@@ -248,10 +294,13 @@ async function mainMenu() {
             console.log('  VALIDATE_PROXIES - Verificar proxies');
             const taskType = readline.question('Tipo: ').toUpperCase();
             let target = null;
+            let count = null;
+
             if (taskType === 'COMMENT') {
                 target = readline.question('URL do post: ');
+                count = readline.question('Quantidade (opcional): ');
             }
-            addTask({ type: taskType, target });
+            addTask({ type: taskType, target, count });
             console.log('✅ Tarefa adicionada!'.green);
             break;
 
@@ -309,6 +358,11 @@ async function mainMenu() {
 
 // --- INICIALIZAÇÃO ---
 console.log('');
-log('🚀 Orquestrador v2.0 iniciado.');
 fs.ensureDirSync(path.join(__dirname, '.tmp'));
-mainMenu();
+
+if (process.argv.includes('--headless')) {
+    handleHeadless();
+} else {
+    log('🚀 Orquestrador v2.1 iniciado (Interactive).');
+    mainMenu();
+}
