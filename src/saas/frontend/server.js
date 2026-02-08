@@ -51,7 +51,12 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3003;
 const JWT_SECRET = process.env.JWT_SECRET || 'xboost-secret-change-in-production';
-const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
+const getBaseUrl = () => {
+    if (process.env.BASE_URL) return process.env.BASE_URL;
+    if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+    return `http://localhost:${PORT}`;
+};
+const BASE_URL = getBaseUrl();
 
 // ================== OAuth Config ==================
 const OAUTH_CONFIG = {
