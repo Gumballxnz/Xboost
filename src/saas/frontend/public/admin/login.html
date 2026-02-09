@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - XBoost</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #09090b;
+            color: #fff;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #a1a1aa;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            background: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 8px;
+            color: #fff;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: #10b981;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #10b981;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #059669;
+        }
+
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        #otp-section {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="flex items-center justify-center h-screen">
+
+    <div class="w-full max-w-md p-8 bg-[#18181b] rounded-xl border border-[#27272a] shadow-2xl">
+        <div class="flex justify-center mb-6">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" class="text-emerald-500">
+                <path
+                    d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.999-1.5L22 7l-10-5-10 5 7.001 2.5L12 11zm0 0v11l10-5V7l-10 5zm-1.001 6.336L3 13.5V7l10 5v11l-2.001-5.664z"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        </div>
+        <h2 class="text-2xl font-bold text-center mb-2">Painel Admin</h2>
+        <p class="text-center text-gray-500 mb-8 text-sm">Acesso restrito via verificação de email.</p>
+
+        <form id="login-form">
+            <!-- Step 1: Email -->
+            <div id="email-section">
+                <div class="input-group">
+                    <label>Email Administrativo</label>
+                    <input type="email" id="email" placeholder="admin@xboost.com" required>
+                </div>
+                <button type="button" id="btn-request" class="btn" onclick="requestOTP()">
+                    Receber Código de Acesso
+                </button>
+            </div>
+
+            <!-- Step 2: OTP -->
+            <div id="otp-section">
+                <div class="input-group">
+                    <label>Código de Verificação (OTP)</label>
+                    <input type="text" id="otp" placeholder="123456" maxlength="6"
+                        style="letter-spacing: 4px; text-align: center;">
+                </div>
+                <button type="submit" class="btn">Entrar</button>
+                <button type="button" class="w-full mt-4 text-sm text-gray-500 hover:text-white" onclick="resetForm()">
+                    Voltar / Reenviar
+                </button>
+            </div>
+
+            <p id="feedback" class="mt-4 text-center text-sm font-medium hidden"></p>
+        </form>
+    </div>
+
+    <script>
+        const API_URL = '/api/admin/auth';
+        let currentEmail = '';
+
+        function showFeedback(msg, type = 'error') {
+            const el = document.getElementById('feedback');
+            el.textContent = msg;
+            el.className = `mt-4 text-center text-sm font-medium block ${type === 'error' ? 'text-red-500' : 'text-emerald-500'}`;
+        }
+
+        async function requestOTP() {
+            const email = document.getElementById('email').value;
+            if (!email) return showFeedback('Digite seu email.');
+
+            const btn = document.getElementById('btn-request');
+            btn.disabled = true;
+            btn.textContent = 'Enviando...';
+
+            try {
+                const res = await fetch(`${API_URL}/login-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    currentEmail = email;
+                    document.getElementById('email-section').style.display = 'none';
+                    document.getElementById('otp-section').style.display = 'block';
+                    document.getElementById('otp').focus();
+                    showFeedback(data.message, 'success');
+                } else {
+                    showFeedback(data.error || 'Erro ao enviar código.');
+                }
+            } catch (err) {
+                showFeedback('Erro de conexão.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Receber Código de Acesso';
+            }
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const otp = document.getElementById('otp').value;
+
+            try {
+                const res = await fetch(`${API_URL}/verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: currentEmail, otp })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.token) {
+                    localStorage.setItem('admin_token', data.token);
+                    window.location.href = '/admin/';
+                } else {
+                    showFeedback(data.error || 'Código inválido.');
+                }
+            } catch (err) {
+                showFeedback('Erro de conexão.');
+            }
+        });
+
+        function resetForm() {
+            document.getElementById('otp-section').style.display = 'none';
+            document.getElementById('email-section').style.display = 'block';
+            showFeedback('');
+        }
+    </script>
+</body>
+
+</html>
