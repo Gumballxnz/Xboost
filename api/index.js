@@ -1,4 +1,4 @@
-// XBoost Vercel Entry Point
-import app from '../src/saas/frontend/server.js';
+// XBoost Vercel Entry Point (Refactored)
+import app from '../src/backend/app/app.js';
 
 export default app;

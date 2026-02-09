@@ -6,6 +6,7 @@
     "main": "index.js",
     "scripts": {
         "start": "node index.js",
+        "build": "echo 'No build step required'",
         "sync": "node scripts/sync_aws.js"
     },
     "dependencies": {

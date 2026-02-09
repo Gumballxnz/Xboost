@@ -1,4 +1,4 @@
-# Dados sensíveis
+# Dados sensï¿½veis
 storage/cookies/
 storage/data/*.json
 config/environments/production.json
@@ -7,7 +7,7 @@ config/environments/production.json
 # Logs
 storage/logs/*.log
 
-# Temporários
+# Temporï¿½rios
 storage/temp/
 .tmp/
 
@@ -24,3 +24,5 @@ venv/
 # IDE
 .vscode/
 .idea/
+.vercel
+.env*.local
